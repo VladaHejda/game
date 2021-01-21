@@ -40,7 +40,7 @@
 				};
 			}
 
-			move(keysPressed) {
+			render(keysPressed) {
 				if (keysPressed[KEY_CODES.LEFT]) {
 					this.rotation -= 0.1;
 				}
@@ -71,13 +71,42 @@
 
 		}
 
+		class Bullet {
+
+			constructor() {
+				this.image = new Image();
+				this.image.src = 'bullet.jpg';
+
+				this.position = {
+					x: 100,
+					y: 300,
+				};
+			}
+
+			render() {
+				context.save();
+				context.translate(this.position.x, this.position.y);
+				context.drawImage(
+					this.image,
+					-(this.image.width / 2),
+					-(this.image.height / 2),
+					this.image.width,
+					this.image.height,
+				);
+				context.restore();
+			}
+
+		}
+
 		const player = new Player();
+		const bullet = new Bullet();
 
 		const KEY_CODES = {
 			LEFT: 'ArrowLeft',
 			UP: 'ArrowUp',
 			RIGHT: 'ArrowRight',
 			DOWN: 'ArrowDown',
+			SPACE: 'Space',
 		};
 
 		const directions = [
@@ -92,22 +121,48 @@
 			keysPressed[directions[i]] = false;
 		}
 
-		document.addEventListener('keydown', function (event) {
-			keysPressed[event.key] = true;
-		});
-		document.addEventListener('keyup', function (event) {
-			keysPressed[event.key] = false;
-		});
-
-		let rot = 0.1;
-		const main = function () {
-			context.clearRect(0, 0, canvas.width, canvas.height);
-
-			player.move(keysPressed);
-
-			window.requestAnimationFrame(main);
+		const onKeyPress = function (keyCode, wasPressed) {
+			for (let i = 0; i < directions.length; i++) {
+				if (keyCode === directions[i]) {
+					keysPressed[keyCode] = wasPressed;
+					break;
+				}
+			}
+			if (keyCode === KEY_CODES.SPACE && wasPressed) {
+				keysPressed[keyCode] = true;
+			}
 		};
 
-		window.requestAnimationFrame(main);
+		document.addEventListener('keydown', function (event) {
+			onKeyPress(event.key, true);
+		});
+		document.addEventListener('keyup', function (event) {
+			onKeyPress(event.key, false);
+		});
+
+		const render = function () {
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			if (keysPressed[KEY_CODES.SPACE]) {
+				keysPressed[KEY_CODES.SPACE] = false;
+
+			}
+
+			player.render(keysPressed);
+			bullet.render(keysPressed);
+
+			window.requestAnimationFrame(render);
+		};
+
+		window.requestAnimationFrame(render);
+
+		/*
+		vybíjená:
+		- kdo měl míč naposled, nemůže ho mít znova
+		- stiskem mezerníku se začne "rozpřahovat", čím déle se rozpřahuje, tím dále dostřelí (má to maximum, když ho přežene, nevystřelí vůbec, maximum chvilku bliká)
+		- může držet míc max např. 5 vtěřin, pak ho automaticky pustí (např. kousek směrem dozadu)
+		- míč se odráží od zdí, tím ztrácí rychlost, když se zastaví, změní barvu (aby to bylo poznat) a další hráč ho může sebrat
+		- hráč může (odražením) vybít sám sebe
+		 */
 	</script>
 </html>
