@@ -27,9 +27,41 @@
 		fixCanvasDimensions();
 		window.addEventListener('resize', fixCanvasDimensions);
 
+		class Playground {
+
+			constructor(context, keysPressed) {
+				this.context = context;
+				this.keysPressed = keysPressed;
+				this.player = new Player(this.context);
+			}
+
+			render() {
+				this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+				this.context.strokeRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+
+				if (this.keysPressed[KEY_CODES.LEFT]) {
+					this.player.rotate(-1);
+				}
+				if (this.keysPressed[KEY_CODES.RIGHT]) {
+					this.player.rotate(1);
+				}
+				if (this.keysPressed[KEY_CODES.UP]) {
+					this.player.move(1);
+				}
+				if (this.keysPressed[KEY_CODES.DOWN]) {
+					this.player.move(-1);
+				}
+
+				this.player.render();
+			}
+
+		}
+
 		class Player {
 
-			constructor() {
+			constructor(context) {
+				this.context = context;
+
 				this.image = new Image();
 				this.image.src = 'player.jpg';
 
@@ -40,33 +72,33 @@
 				};
 			}
 
-			render(keysPressed) {
-				if (keysPressed[KEY_CODES.LEFT]) {
-					this.rotation -= 0.1;
-				}
-				if (keysPressed[KEY_CODES.RIGHT]) {
-					this.rotation += 0.1;
-				}
-				if (keysPressed[KEY_CODES.UP]) {
-					this.position.x += 3 * Math.sin(this.rotation);
-					this.position.y -= 3 * Math.cos(this.rotation);
-				}
-				if (keysPressed[KEY_CODES.DOWN]) {
-					this.position.x -= 3 * Math.sin(this.rotation);
-					this.position.y += 3 * Math.cos(this.rotation);
-				}
+			move(speed) {
+				this.position.x = Math.max(Math.min(
+					this.position.x + (speed * 3 * Math.sin(this.rotation)),
+					this.context.canvas.width - (this.image.width / 2) - 1,
+				), (this.image.width / 2) + 1);
+				this.position.y = Math.max(Math.min(
+					this.position.y - (speed * 3 * Math.cos(this.rotation)),
+					this.context.canvas.height - (this.image.height / 2) - 1,
+				), (this.image.height / 2) + 1);
+			}
 
-				context.save();
-				context.translate(this.position.x, this.position.y);
-				context.rotate(this.rotation);
-				context.drawImage(
+			rotate(speed) {
+				this.rotation = (this.rotation + (speed / 10)) % (2 * Math.PI);
+			}
+
+			render() {
+				this.context.save();
+				this.context.translate(this.position.x, this.position.y);
+				this.context.rotate(this.rotation);
+				this.context.drawImage(
 					this.image,
 					-(this.image.width / 2),
 					-(this.image.height / 2),
 					this.image.width,
 					this.image.height,
 				);
-				context.restore();
+				this.context.restore();
 			}
 
 		}
@@ -97,9 +129,6 @@
 			}
 
 		}
-
-		const player = new Player();
-		const bullet = new Bullet();
 
 		const KEY_CODES = {
 			LEFT: 'ArrowLeft',
@@ -140,15 +169,17 @@
 			onKeyPress(event.key, false);
 		});
 
+		const playground = new Playground(context, keysPressed);
+		const bullet = new Bullet();
+
 		const render = function () {
-			context.clearRect(0, 0, canvas.width, canvas.height);
+			playground.render();
 
 			if (keysPressed[KEY_CODES.SPACE]) {
 				keysPressed[KEY_CODES.SPACE] = false;
 
 			}
 
-			player.render(keysPressed);
 			bullet.render(keysPressed);
 
 			window.requestAnimationFrame(render);
