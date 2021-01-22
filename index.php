@@ -33,26 +33,107 @@
 				this.context = context;
 				this.keysPressed = keysPressed;
 				this.player = new Player(this.context);
+				this.walls = [
+					new Wall(this.context, 150, 300, 100, 200),
+					new Wall(this.context, 400, 400, 100, 50),
+				];
+
+				this.context.strokeStyle = '#000';
 			}
 
 			render() {
 				this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
 				this.context.strokeRect(0, 0, this.context.canvas.width, this.context.canvas.height);
 
-				if (this.keysPressed[KEY_CODES.LEFT]) {
-					this.player.rotate(-1);
+				let rotation = 0;
+				if (this.keysPressed[KEY_CODES.LEFT] && !this.keysPressed[KEY_CODES.RIGHT]) {
+					rotation = -1;
+				} else if (this.keysPressed[KEY_CODES.RIGHT] && !this.keysPressed[KEY_CODES.LEFT]) {
+					rotation = 1;
 				}
-				if (this.keysPressed[KEY_CODES.RIGHT]) {
-					this.player.rotate(1);
+
+				let movement = 0;
+				if (this.keysPressed[KEY_CODES.UP] && !this.keysPressed[KEY_CODES.DOWN]) {
+					movement = 1;
+				} else if (this.keysPressed[KEY_CODES.DOWN] && !this.keysPressed[KEY_CODES.UP]) {
+					movement = -1;
 				}
-				if (this.keysPressed[KEY_CODES.UP]) {
-					this.player.move(1);
+
+				if (rotation !== 0) {
+					this.player.rotation = (this.player.rotation + (rotation / 10)) % (2 * Math.PI);
 				}
-				if (this.keysPressed[KEY_CODES.DOWN]) {
-					this.player.move(-1);
+
+				if (movement !== 0) {
+					const newPosition = {
+						x: Math.max(Math.min(
+							this.player.position.x + (movement * 3 * Math.sin(this.player.rotation)),
+							this.context.canvas.width - (this.player.image.width / 2) - 1,
+						), (this.player.image.width / 2) + 1),
+						y: Math.max(Math.min(
+							this.player.position.y - (movement * 3 * Math.cos(this.player.rotation)),
+							this.context.canvas.height - (this.player.image.height / 2) - 1,
+						), (this.player.image.height / 2) + 1),
+					};
+
+					const playerBoundingBox = {
+						left: newPosition.x - (this.player.image.width / 2),
+						right: newPosition.x + (this.player.image.width / 2),
+						top: newPosition.y - (this.player.image.height / 2),
+						bottom: newPosition.y + (this.player.image.height / 2),
+					}
+
+					for (let i = 0; i < this.walls.length; i++) {
+						const wall = this.walls[i];
+
+						if (
+							playerBoundingBox.top < wall.position.y + wall.height
+							&& playerBoundingBox.bottom > wall.position.y
+						) {
+							if (
+								newPosition.x < this.player.position.x
+								&& playerBoundingBox.left < wall.position.x + wall.width
+								&& playerBoundingBox.right > wall.position.x + wall.width
+							) {
+								newPosition.x = wall.position.x + wall.width + (this.player.image.width / 2);
+							} else if (
+								newPosition.x > this.player.position.x
+								&& playerBoundingBox.right > wall.position.x
+								&& playerBoundingBox.left < wall.position.x
+							) {
+								newPosition.x = wall.position.x - (this.player.image.width / 2);
+							}
+						}
+
+						if (
+							playerBoundingBox.left < wall.position.x + wall.width
+							&& playerBoundingBox.right > wall.position.x
+						) {
+							if (
+								newPosition.y < this.player.position.y
+								&& playerBoundingBox.top < wall.position.y + wall.height
+								&& playerBoundingBox.bottom > wall.position.y + wall.height
+							) {
+								newPosition.y = wall.position.y + wall.height + (this.player.image.height / 2);
+							} else if (
+								newPosition.y > this.player.position.y
+								&& playerBoundingBox.bottom > wall.position.y
+								&& playerBoundingBox.top < wall.position.y
+							) {
+								newPosition.y = wall.position.y - (this.player.image.height / 2);
+							}
+						}
+
+						if (newPosition.x === 0 && newPosition.y === 0) {
+							break;
+						}
+					}
+
+					this.player.position.x = newPosition.x;
+					this.player.position.y = newPosition.y;
 				}
 
 				this.player.render();
+				this.walls.forEach(wall => wall.render());
 			}
 
 		}
@@ -63,28 +144,13 @@
 				this.context = context;
 
 				this.image = new Image();
-				this.image.src = 'player.jpg';
+				this.image.src = 'player.png';
 
 				this.rotation = 0.0;
 				this.position = {
 					x: 200,
 					y: 100,
 				};
-			}
-
-			move(speed) {
-				this.position.x = Math.max(Math.min(
-					this.position.x + (speed * 3 * Math.sin(this.rotation)),
-					this.context.canvas.width - (this.image.width / 2) - 1,
-				), (this.image.width / 2) + 1);
-				this.position.y = Math.max(Math.min(
-					this.position.y - (speed * 3 * Math.cos(this.rotation)),
-					this.context.canvas.height - (this.image.height / 2) - 1,
-				), (this.image.height / 2) + 1);
-			}
-
-			rotate(speed) {
-				this.rotation = (this.rotation + (speed / 10)) % (2 * Math.PI);
 			}
 
 			render() {
@@ -99,6 +165,25 @@
 					this.image.height,
 				);
 				this.context.restore();
+			}
+
+		}
+
+		class Wall {
+
+			constructor(context, x, y, width, height) {
+				this.context = context;
+				this.position = {
+					x,
+					y,
+				};
+				this.width = width;
+				this.height = height;
+			}
+
+			render() {
+				this.context.fillStyle = '#000';
+				this.context.fillRect(this.position.x, this.position.y, this.width, this.height);
 			}
 
 		}
@@ -146,9 +231,7 @@
 		];
 
 		const keysPressed = {};
-		for (let i = 0; i < directions.length; i++) {
-			keysPressed[directions[i]] = false;
-		}
+		directions.forEach(direction => keysPressed[direction] = false);
 
 		const onKeyPress = function (keyCode, wasPressed) {
 			for (let i = 0; i < directions.length; i++) {
