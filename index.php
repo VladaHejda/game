@@ -36,6 +36,8 @@
 				this.walls = [
 					new Wall(this.context, 150, 300, 100, 200),
 					new Wall(this.context, 400, 400, 100, 50),
+					new Wall(this.context, 250, 400, 130, 100),
+					new Wall(this.context, 480, 350, 20, 50),
 				];
 
 				this.context.strokeStyle = '#000';
@@ -80,14 +82,31 @@
 						right: newPosition.x + (this.player.image.width / 2),
 						top: newPosition.y - (this.player.image.height / 2),
 						bottom: newPosition.y + (this.player.image.height / 2),
-					}
+					};
+
+					const positionFixed = {
+						x: false,
+						y: false,
+					};
 
 					for (let i = 0; i < this.walls.length; i++) {
 						const wall = this.walls[i];
 
+						const intersects = {
+							horizontally: Math.min(
+								Math.max(playerBoundingBox.right - wall.position.x, 0),
+								Math.max((wall.position.x + wall.width) - playerBoundingBox.left, 0),
+							),
+							vertically: Math.min(
+								Math.max(playerBoundingBox.bottom - wall.position.y, 0),
+								Math.max((wall.position.y + wall.height) - playerBoundingBox.top, 0),
+							),
+						};
+
 						if (
-							playerBoundingBox.top < wall.position.y + wall.height
-							&& playerBoundingBox.bottom > wall.position.y
+							!positionFixed.x
+							&& intersects.vertically > 0
+							&& intersects.vertically > intersects.horizontally
 						) {
 							if (
 								newPosition.x < this.player.position.x
@@ -95,18 +114,21 @@
 								&& playerBoundingBox.right > wall.position.x + wall.width
 							) {
 								newPosition.x = wall.position.x + wall.width + (this.player.image.width / 2);
+								positionFixed.x = true;
+
 							} else if (
 								newPosition.x > this.player.position.x
 								&& playerBoundingBox.right > wall.position.x
 								&& playerBoundingBox.left < wall.position.x
 							) {
 								newPosition.x = wall.position.x - (this.player.image.width / 2);
+								positionFixed.x = true;
 							}
-						}
 
-						if (
-							playerBoundingBox.left < wall.position.x + wall.width
-							&& playerBoundingBox.right > wall.position.x
+						} else if (
+							!positionFixed.y
+							&& intersects.horizontally > 0
+							&& intersects.horizontally > intersects.vertically
 						) {
 							if (
 								newPosition.y < this.player.position.y
@@ -114,16 +136,19 @@
 								&& playerBoundingBox.bottom > wall.position.y + wall.height
 							) {
 								newPosition.y = wall.position.y + wall.height + (this.player.image.height / 2);
+								positionFixed.y = true;
+
 							} else if (
 								newPosition.y > this.player.position.y
 								&& playerBoundingBox.bottom > wall.position.y
 								&& playerBoundingBox.top < wall.position.y
 							) {
 								newPosition.y = wall.position.y - (this.player.image.height / 2);
+								positionFixed.y = true;
 							}
 						}
 
-						if (newPosition.x === 0 && newPosition.y === 0) {
+						if (positionFixed.x && positionFixed.y) {
 							break;
 						}
 					}
