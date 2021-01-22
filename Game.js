@@ -43,7 +43,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.UP]: Game.KEY_CODES.UP,
 					[Player.CONTROL_ACTIONS.DOWN]: Game.KEY_CODES.DOWN,
 				}),
-				new Player(this, 220, 30, {
+				new Player(this, 260, 60, {
 					[Player.CONTROL_ACTIONS.LEFT]: Game.KEY_CODES.A,
 					[Player.CONTROL_ACTIONS.RIGHT]: Game.KEY_CODES.D,
 					[Player.CONTROL_ACTIONS.UP]: Game.KEY_CODES.W,
@@ -55,6 +55,7 @@ class Game {
 				new Wall(400, 400, 100, 50),
 				new Wall(250, 400, 130, 100),
 				new Wall(480, 350, 20, 50),
+				new Wall(350, 150, 40, 200),
 			],
 		);
 

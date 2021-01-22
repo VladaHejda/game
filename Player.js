@@ -61,7 +61,7 @@ class Player {
 		this.updateMovement(playground);
 
 		context.save();
-		context.translate(this.position.x, this.position.y);
+		context.translate(this.position.x + (this.image.width / 2), this.position.y + (this.image.height / 2));
 		context.rotate(this.rotation);
 		context.drawImage(
 			this.image,

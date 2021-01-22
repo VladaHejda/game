@@ -21,19 +21,19 @@ class Playground {
 		const newPosition = {
 			x: Math.max(Math.min(
 				player.position.x + (player.movementSpeed * direction * 3 * Math.sin(player.rotation)),
-				this.width - (player.image.width / 2) - 1,
-			), (player.image.width / 2) + 1),
+				this.width - player.image.width - 1,
+			), 1),
 			y: Math.max(Math.min(
 				player.position.y - (player.movementSpeed * direction * 3 * Math.cos(player.rotation)),
-				this.height - (player.image.height / 2) - 1,
-			), (player.image.height / 2) + 1),
+				this.height - player.image.height - 1,
+			), 1),
 		};
 
 		const playerBoundingBox = {
-			left: newPosition.x - (player.image.width / 2),
-			right: newPosition.x + (player.image.width / 2),
-			top: newPosition.y - (player.image.height / 2),
-			bottom: newPosition.y + (player.image.height / 2),
+			left: newPosition.x,
+			right: newPosition.x + player.image.width,
+			top: newPosition.y,
+			bottom: newPosition.y + player.image.height,
 		};
 
 		const positionFixed = {
@@ -53,7 +53,6 @@ class Playground {
 				continue;
 			}
 
-			// todo hráč má pivot jinde než wall
 			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.players[i])) {
 				break;
 			}
@@ -89,7 +88,7 @@ class Playground {
 				&& playerBoundingBox.left < obstruction.position.x + obstruction.width
 				&& playerBoundingBox.right > obstruction.position.x + obstruction.width
 			) {
-				newPosition.x = obstruction.position.x + obstruction.width + (player.image.width / 2);
+				newPosition.x = obstruction.position.x + obstruction.width;
 				positionFixed.horizontal = true;
 
 			} else if (
@@ -97,7 +96,7 @@ class Playground {
 				&& playerBoundingBox.right > obstruction.position.x
 				&& playerBoundingBox.left < obstruction.position.x
 			) {
-				newPosition.x = obstruction.position.x - (player.image.width / 2);
+				newPosition.x = obstruction.position.x - player.image.width;
 				positionFixed.horizontal = true;
 			}
 
@@ -110,7 +109,7 @@ class Playground {
 				&& playerBoundingBox.top < obstruction.position.y + obstruction.height
 				&& playerBoundingBox.bottom > obstruction.position.y + obstruction.height
 			) {
-				newPosition.y = obstruction.position.y + obstruction.height + (player.image.height / 2);
+				newPosition.y = obstruction.position.y + obstruction.height;
 				positionFixed.vertical = true;
 
 			} else if (
@@ -118,7 +117,7 @@ class Playground {
 				&& playerBoundingBox.bottom > obstruction.position.y
 				&& playerBoundingBox.top < obstruction.position.y
 			) {
-				newPosition.y = obstruction.position.y - (player.image.height / 2);
+				newPosition.y = obstruction.position.y - player.image.height;
 				positionFixed.vertical = true;
 			}
 		}
