@@ -1,15 +1,12 @@
 class Player {
 
 	static CONTROL_ACTIONS = {
-		LEFT: 0,
-		RIGHT: 1,
-		UP: 2,
-		DOWN: 3,
-	};
-
-	static MOVEMENT_DIRECTION = {
-		FORWARD: 1,
-		BACKWARD: -1,
+		TURN_LEFT: 0,
+		TURN_RIGHT: 1,
+		GO_FORWARD: 2,
+		GO_BACKWARD: 3,
+		GO_LEFT: 4,
+		GO_RIGHT: 5,
 	};
 
 	constructor(game, x, y, controls) {
@@ -33,9 +30,9 @@ class Player {
 
 	updateRotation() {
 		let rotation = 0;
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.LEFT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.RIGHT]]) {
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_LEFT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_RIGHT]]) {
 			rotation = -1;
-		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.RIGHT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.LEFT]]) {
+		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_RIGHT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_LEFT]]) {
 			rotation = 1;
 		}
 
@@ -45,14 +42,22 @@ class Player {
 	}
 
 	updateMovement(playground) {
-		let movement = null;
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.UP]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.DOWN]]) {
-			movement = Player.MOVEMENT_DIRECTION.FORWARD;
-		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.DOWN]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.UP]]) {
-			movement = Player.MOVEMENT_DIRECTION.BACKWARD;
+		let leadDirection = 0;
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_FORWARD]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_BACKWARD]]) {
+			leadDirection = 1;
+		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_BACKWARD]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_FORWARD]]) {
+			leadDirection = -1;
 		}
-		if (movement !== null) {
-			playground.movePlayer(this, movement);
+
+		let sideDirection = 0;
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_RIGHT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_LEFT]]) {
+			sideDirection = 1;
+		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_LEFT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_RIGHT]]) {
+			sideDirection = -1;
+		}
+
+		if (leadDirection !== 0 || sideDirection !== 0) {
+			playground.movePlayer(this, leadDirection, sideDirection);
 		}
 	}
 

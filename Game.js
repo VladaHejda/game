@@ -5,10 +5,14 @@ class Game {
 		RIGHT: 'ArrowRight',
 		UP: 'ArrowUp',
 		DOWN: 'ArrowDown',
+		N: 'n',
+		M: 'm',
 		A: 'a',
 		D: 'd',
 		W: 'w',
 		S: 's',
+		Q: 'q',
+		E: 'e',
 	};
 
 	constructor(document, canvasElement, width, height) {
@@ -23,10 +27,14 @@ class Game {
 			Game.KEY_CODES.RIGHT,
 			Game.KEY_CODES.UP,
 			Game.KEY_CODES.DOWN,
+			Game.KEY_CODES.N,
+			Game.KEY_CODES.M,
 			Game.KEY_CODES.A,
 			Game.KEY_CODES.D,
 			Game.KEY_CODES.W,
 			Game.KEY_CODES.S,
+			Game.KEY_CODES.Q,
+			Game.KEY_CODES.E,
 		];
 
 		this.keysPressed = {};
@@ -38,16 +46,20 @@ class Game {
 			this.height,
 			[
 				new Player(this, 200, 100, {
-					[Player.CONTROL_ACTIONS.LEFT]: Game.KEY_CODES.LEFT,
-					[Player.CONTROL_ACTIONS.RIGHT]: Game.KEY_CODES.RIGHT,
-					[Player.CONTROL_ACTIONS.UP]: Game.KEY_CODES.UP,
-					[Player.CONTROL_ACTIONS.DOWN]: Game.KEY_CODES.DOWN,
+					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.LEFT,
+					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.RIGHT,
+					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.UP,
+					[Player.CONTROL_ACTIONS.GO_BACKWARD]: Game.KEY_CODES.DOWN,
+					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.N,
+					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.M,
 				}),
 				new Player(this, 260, 60, {
-					[Player.CONTROL_ACTIONS.LEFT]: Game.KEY_CODES.A,
-					[Player.CONTROL_ACTIONS.RIGHT]: Game.KEY_CODES.D,
-					[Player.CONTROL_ACTIONS.UP]: Game.KEY_CODES.W,
-					[Player.CONTROL_ACTIONS.DOWN]: Game.KEY_CODES.S,
+					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.A,
+					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.D,
+					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.W,
+					[Player.CONTROL_ACTIONS.GO_BACKWARD]: Game.KEY_CODES.S,
+					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.Q,
+					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
 				}),
 			],
 			[

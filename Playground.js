@@ -17,14 +17,23 @@ class Playground {
 		this.walls.forEach(wall => wall.render(context));
 	}
 
-	movePlayer(player, direction) {
+	movePlayer(player, leadDirection, sideDirection) {
+		let coefficient = 3;
+		if (leadDirection !== 0 && sideDirection !== 0) {
+			coefficient = Math.sqrt(Math.pow(coefficient, 2) / 2);
+		}
+
 		const newPosition = {
 			x: Math.max(Math.min(
-				player.position.x + (player.movementSpeed * direction * 3 * Math.sin(player.rotation)),
+				player.position.x +
+				(player.movementSpeed * leadDirection * coefficient * Math.sin(player.rotation)) +
+				(player.movementSpeed * sideDirection * coefficient * Math.sin(player.rotation + (Math.PI / 2))),
 				this.width - player.image.width - 1,
 			), 1),
 			y: Math.max(Math.min(
-				player.position.y - (player.movementSpeed * direction * 3 * Math.cos(player.rotation)),
+				player.position.y -
+				(player.movementSpeed * leadDirection * coefficient * Math.cos(player.rotation)) -
+				(player.movementSpeed * sideDirection * coefficient * Math.cos(player.rotation + (Math.PI / 2))),
 				this.height - player.image.height - 1,
 			), 1),
 		};
@@ -42,7 +51,7 @@ class Playground {
 		};
 
 		for (let i = 0; i < this.walls.length; i++) {
-			// todo moc argumentů fuj!
+			// todo moc argumentů fuj! zkusit ty kolize zjednodušit a opravit bugy
 			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.walls[i])) {
 				break;
 			}
