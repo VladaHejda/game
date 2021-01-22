@@ -1,11 +1,38 @@
 class Playground {
 
+	static MOVEMENT_DIRECTION = {
+		LEFT: 0,
+		RIGHT: 1,
+		UP: 2,
+		DOWN: 3,
+	};
+
+	static DIMENSIONS = [
+		{
+			name: 'x',
+			directions: {
+				lower: Playground.MOVEMENT_DIRECTION.LEFT,
+				higher: Playground.MOVEMENT_DIRECTION.RIGHT,
+			},
+		},
+		{
+			name: 'y',
+			directions: {
+				lower: Playground.MOVEMENT_DIRECTION.UP,
+				higher: Playground.MOVEMENT_DIRECTION.DOWN,
+			},
+		},
+	];
+
 	constructor(game, width, height, players, walls) {
 		this.game = game;
 		this.width = width;
 		this.height = height;
 		this.players = players;
 		this.walls = walls;
+
+		this.straightMovementCoefficient = 3;
+		this.diagonalMovementCoefficient = Math.sqrt(Math.pow(this.straightMovementCoefficient, 2) / 2);
 	}
 
 	render(context) {
@@ -18,120 +45,118 @@ class Playground {
 	}
 
 	movePlayer(player, leadDirection, sideDirection) {
-		let coefficient = 3;
-		if (leadDirection !== 0 && sideDirection !== 0) {
-			coefficient = Math.sqrt(Math.pow(coefficient, 2) / 2);
-		}
+		const coefficient = player.movementSpeed * (
+			leadDirection !== 0 && sideDirection !== 0
+				? this.diagonalMovementCoefficient
+				: this.straightMovementCoefficient
+		);
+		leadDirection *= coefficient;
+		sideDirection *= coefficient;
 
-		const newPosition = {
-			x: Math.max(Math.min(
-				player.position.x +
-				(player.movementSpeed * leadDirection * coefficient * Math.sin(player.rotation)) +
-				(player.movementSpeed * sideDirection * coefficient * Math.sin(player.rotation + (Math.PI / 2))),
-				this.width - player.image.width - 1,
-			), 1),
-			y: Math.max(Math.min(
-				player.position.y -
-				(player.movementSpeed * leadDirection * coefficient * Math.cos(player.rotation)) -
-				(player.movementSpeed * sideDirection * coefficient * Math.cos(player.rotation + (Math.PI / 2))),
-				this.height - player.image.height - 1,
-			), 1),
+		const positionLimits = {
+			[Playground.MOVEMENT_DIRECTION.LEFT]: 1,
+			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - player.width - 1,
+			[Playground.MOVEMENT_DIRECTION.UP]: 1,
+			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - player.height - 1,
 		};
 
-		const playerBoundingBox = {
-			left: newPosition.x,
-			right: newPosition.x + player.image.width,
-			top: newPosition.y,
-			bottom: newPosition.y + player.image.height,
+		const obstructions = [];
+		this.walls.forEach(wall => obstructions.push(wall));
+		this.players.forEach(otherPlayer => {
+			if (otherPlayer !== player) {
+				obstructions.push(otherPlayer);
+			}
+		});
+
+		const positionDelta = {
+			x: (leadDirection * Math.sin(player.rotation)) +
+				(sideDirection * Math.sin(player.rotation + (Math.PI / 2))),
+			y: (leadDirection * -Math.cos(player.rotation)) +
+				(sideDirection * -Math.cos(player.rotation + (Math.PI / 2))),
 		};
 
-		const positionFixed = {
-			horizontal: false,
-			vertical: false,
-		};
-
-		for (let i = 0; i < this.walls.length; i++) {
-			// todo moc argumentů fuj! zkusit ty kolize zjednodušit a opravit bugy
-			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.walls[i])) {
-				break;
-			}
-		}
-
-		for (let i = 0; i < this.players.length; i++) {
-			if (this.players[i] === player) {
-				continue;
+		Playground.DIMENSIONS.forEach(dimension => {
+			let direction;
+			if (positionDelta[dimension.name] < 0) {
+				direction = dimension.directions.lower;
+			} else if (positionDelta[dimension.name] > 0) {
+				direction = dimension.directions.higher;
+			} else {
+				return;
 			}
 
-			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.players[i])) {
-				break;
-			}
-		}
+			obstructions.forEach(obstruction => {
+				const limit = this.findPositionLimit(player, obstruction, direction);
 
-		player.position.x = newPosition.x;
-		player.position.y = newPosition.y;
+				if (limit !== null) {
+					positionLimits[direction] = direction === dimension.directions.lower
+						? Math.max(positionLimits[direction], limit)
+						: Math.min(positionLimits[direction], limit);
+				}
+			});
+
+			let newPosition = player.position[dimension.name] + positionDelta[dimension.name];
+			newPosition = Math.max(newPosition, positionLimits[dimension.directions.lower]);
+			newPosition = Math.min(newPosition, positionLimits[dimension.directions.higher]);
+
+			player.position[dimension.name] = newPosition;
+		});
 	}
 
-	calculateCollision(player, newPosition, playerBoundingBox, positionFixed, obstruction) {
-		const intersects = {
-			horizontally: Math.min(
-				Math.max(playerBoundingBox.right - obstruction.position.x, 0),
-				Math.max((obstruction.position.x + obstruction.width) - playerBoundingBox.left, 0),
-			),
-			vertically: Math.min(
-				Math.max(playerBoundingBox.bottom - obstruction.position.y, 0),
-				Math.max((obstruction.position.y + obstruction.height) - playerBoundingBox.top, 0),
-			),
+	findPositionLimit(subject, obstruction, direction) {
+		const subjectBoundingBox = {
+			left: subject.position.x,
+			right: subject.position.x + subject.width,
+			top: subject.position.y,
+			bottom: subject.position.y + subject.height,
 		};
 
-		const possibleSuspension = {
-			horizontally: !positionFixed.horizontal && intersects.vertically > 0,
-			vertically: !positionFixed.vertical && intersects.horizontally > 0,
+		const obstructionBoundingBox = {
+			left: obstruction.position.x,
+			right: obstruction.position.x + obstruction.width,
+			top: obstruction.position.y,
+			bottom: obstruction.position.y + obstruction.height,
 		};
 
-		if (
-			possibleSuspension.horizontally
-			&& intersects.vertically > intersects.horizontally
-		) {
-			if (
-				newPosition.x < player.position.x
-				&& playerBoundingBox.left < obstruction.position.x + obstruction.width
-				&& playerBoundingBox.right > obstruction.position.x + obstruction.width
-			) {
-				newPosition.x = obstruction.position.x + obstruction.width;
-				positionFixed.horizontal = true;
-
-			} else if (
-				newPosition.x > player.position.x
-				&& playerBoundingBox.right > obstruction.position.x
-				&& playerBoundingBox.left < obstruction.position.x
-			) {
-				newPosition.x = obstruction.position.x - player.image.width;
-				positionFixed.horizontal = true;
-			}
-
-		} else if (
-			possibleSuspension.vertically
-			&& intersects.horizontally > intersects.vertically
-		) {
-			if (
-				newPosition.y < player.position.y
-				&& playerBoundingBox.top < obstruction.position.y + obstruction.height
-				&& playerBoundingBox.bottom > obstruction.position.y + obstruction.height
-			) {
-				newPosition.y = obstruction.position.y + obstruction.height;
-				positionFixed.vertical = true;
-
-			} else if (
-				newPosition.y > player.position.y
-				&& playerBoundingBox.bottom > obstruction.position.y
-				&& playerBoundingBox.top < obstruction.position.y
-			) {
-				newPosition.y = obstruction.position.y - player.image.height;
-				positionFixed.vertical = true;
-			}
+		let canObstruct;
+		switch (direction) {
+			case Playground.MOVEMENT_DIRECTION.LEFT:
+			case Playground.MOVEMENT_DIRECTION.RIGHT:
+				canObstruct = subjectBoundingBox.top <= obstructionBoundingBox.bottom
+					&& subjectBoundingBox.bottom >= obstructionBoundingBox.top;
+				break;
+			case Playground.MOVEMENT_DIRECTION.UP:
+			case Playground.MOVEMENT_DIRECTION.DOWN:
+				canObstruct = subjectBoundingBox.left <= obstructionBoundingBox.right
+					&& subjectBoundingBox.right >= obstructionBoundingBox.left;
+				break;
 		}
 
-		return !positionFixed.horizontal || !positionFixed.vertical;
+		if (!canObstruct) {
+			return null;
+		}
+
+		let limit;
+		switch (direction) {
+			case Playground.MOVEMENT_DIRECTION.LEFT:
+				canObstruct = obstructionBoundingBox.right < subjectBoundingBox.left;
+				limit = obstructionBoundingBox.right + 1;
+				break;
+			case Playground.MOVEMENT_DIRECTION.RIGHT:
+				canObstruct = obstructionBoundingBox.left > subjectBoundingBox.right;
+				limit = obstructionBoundingBox.left - subject.width - 1;
+				break;
+			case Playground.MOVEMENT_DIRECTION.UP:
+				canObstruct = obstructionBoundingBox.bottom < subjectBoundingBox.top;
+				limit = obstructionBoundingBox.bottom + 1;
+				break;
+			case Playground.MOVEMENT_DIRECTION.DOWN:
+				canObstruct = obstructionBoundingBox.top > subjectBoundingBox.bottom;
+				limit = obstructionBoundingBox.top - subject.height - 1;
+				break;
+		}
+
+		return canObstruct ? limit : null;
 	}
 
 }
