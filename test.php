@@ -18,7 +18,7 @@
 		canvas.height = 500;
 
 		let player = new Image();
-		player.src = 'poop.jpg';
+		player.src = 'player.jpg';
 
 		const playerPosition = {
 			x: 200,
@@ -103,10 +103,7 @@
 				}
 			}
 
-			context.save();
-			context.rotate(0.5);
 			context.drawImage(player, playerPosition.x, playerPosition.y, 44, 44);
-			context.restore();
 
 			window.requestAnimationFrame(main);
 		};
