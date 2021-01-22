@@ -9,6 +9,9 @@ class Player {
 		GO_RIGHT: 5,
 	};
 
+	static STRAIGHT_MOVEMENT_COEFFICIENT = 3;
+	static DIAGONAL_MOVEMENT_COEFFICIENT = Math.sqrt(Math.pow(Player.STRAIGHT_MOVEMENT_COEFFICIENT, 2) / 2);
+
 	constructor(game, x, y, controls) {
 		this.game = game;
 		this.controls = controls;
@@ -57,6 +60,14 @@ class Player {
 		}
 
 		if (leadDirection !== 0 || sideDirection !== 0) {
+			const coefficient = this.movementSpeed * (
+				leadDirection !== 0 && sideDirection !== 0
+					? Player.DIAGONAL_MOVEMENT_COEFFICIENT
+					: Player.STRAIGHT_MOVEMENT_COEFFICIENT
+			);
+			leadDirection *= coefficient;
+			sideDirection *= coefficient;
+
 			playground.movePlayer(this, leadDirection, sideDirection);
 			playground.takeBall(this);
 		}

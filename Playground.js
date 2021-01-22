@@ -31,9 +31,6 @@ class Playground {
 		this.players = players;
 		this.ball = ball;
 		this.walls = walls;
-
-		this.straightMovementCoefficient = 3;
-		this.diagonalMovementCoefficient = Math.sqrt(Math.pow(this.straightMovementCoefficient, 2) / 2);
 	}
 
 	render(context) {
@@ -47,14 +44,6 @@ class Playground {
 	}
 
 	movePlayer(player, leadDirection, sideDirection) {
-		const coefficient = player.movementSpeed * (
-			leadDirection !== 0 && sideDirection !== 0
-				? this.diagonalMovementCoefficient
-				: this.straightMovementCoefficient
-		);
-		leadDirection *= coefficient;
-		sideDirection *= coefficient;
-
 		const positionLimits = {
 			[Playground.MOVEMENT_DIRECTION.LEFT]: 1,
 			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - player.width - 1,
