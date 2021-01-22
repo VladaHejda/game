@@ -15,6 +15,7 @@
 	<script type="application/javascript" src="Game.js?v=<?=$unique; ?>"></script>
 	<script type="application/javascript" src="Playground.js?v=<?=$unique; ?>"></script>
 	<script type="application/javascript" src="Player.js?v=<?=$unique; ?>"></script>
+	<script type="application/javascript" src="Ball.js?v=<?=$unique; ?>"></script>
 	<script type="application/javascript" src="Wall.js?v=<?=$unique; ?>"></script>
 	<script type="application/javascript">
 		const game = new Game(document, document.getElementById('canvas'), 600, 600);

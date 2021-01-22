@@ -62,6 +62,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
 				}),
 			],
+			new Ball(220, 550),
 			[
 				new Wall(150, 300, 100, 200),
 				new Wall(400, 400, 100, 50),

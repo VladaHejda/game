@@ -58,6 +58,7 @@ class Player {
 
 		if (leadDirection !== 0 || sideDirection !== 0) {
 			playground.movePlayer(this, leadDirection, sideDirection);
+			playground.takeBall(this);
 		}
 	}
 

@@ -24,11 +24,12 @@ class Playground {
 		},
 	];
 
-	constructor(game, width, height, players, walls) {
+	constructor(game, width, height, players, ball, walls) {
 		this.game = game;
 		this.width = width;
 		this.height = height;
 		this.players = players;
+		this.ball = ball;
 		this.walls = walls;
 
 		this.straightMovementCoefficient = 3;
@@ -41,6 +42,7 @@ class Playground {
 		context.strokeRect(0, 0, this.width, this.height);
 
 		this.players.forEach(player => player.render(context, this));
+		this.ball.render(context);
 		this.walls.forEach(wall => wall.render(context));
 	}
 
@@ -101,6 +103,10 @@ class Playground {
 
 			player.position[dimension.name] = newPosition;
 		});
+	}
+
+	takeBall(player) {
+
 	}
 
 	findPositionLimit(subject, obstruction, direction) {
