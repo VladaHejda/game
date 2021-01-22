@@ -85,12 +85,19 @@
 					};
 
 					const positionFixed = {
-						x: false,
-						y: false,
+						horizontal: false,
+						vertical: false,
 					};
 
 					for (let i = 0; i < this.walls.length; i++) {
 						const wall = this.walls[i];
+
+						// const intersects = {
+						// 	left: Math.min(wall.position.x - playerBoundingBox.right, 0),
+						// 	right: Math.max((wall.position.x + wall.width) - playerBoundingBox.left, 0),
+						// 	top: Math.min(wall.position.y, playerBoundingBox.bottom, 0),
+						// 	bottom: Math.max((wall.position.y + wall.height) - playerBoundingBox.top, 0),
+						// };
 
 						const intersects = {
 							horizontally: Math.min(
@@ -103,9 +110,13 @@
 							),
 						};
 
+						const possibleSuspension = {
+							horizontally: !positionFixed.horizontal && intersects.vertically > 0,
+							vertically: !positionFixed.vertical && intersects.horizontally > 0,
+						};
+
 						if (
-							!positionFixed.x
-							&& intersects.vertically > 0
+							possibleSuspension.horizontally
 							&& intersects.vertically > intersects.horizontally
 						) {
 							if (
@@ -114,7 +125,7 @@
 								&& playerBoundingBox.right > wall.position.x + wall.width
 							) {
 								newPosition.x = wall.position.x + wall.width + (this.player.image.width / 2);
-								positionFixed.x = true;
+								positionFixed.horizontal = true;
 
 							} else if (
 								newPosition.x > this.player.position.x
@@ -122,12 +133,11 @@
 								&& playerBoundingBox.left < wall.position.x
 							) {
 								newPosition.x = wall.position.x - (this.player.image.width / 2);
-								positionFixed.x = true;
+								positionFixed.horizontal = true;
 							}
 
 						} else if (
-							!positionFixed.y
-							&& intersects.horizontally > 0
+							possibleSuspension.vertically
 							&& intersects.horizontally > intersects.vertically
 						) {
 							if (
@@ -136,7 +146,7 @@
 								&& playerBoundingBox.bottom > wall.position.y + wall.height
 							) {
 								newPosition.y = wall.position.y + wall.height + (this.player.image.height / 2);
-								positionFixed.y = true;
+								positionFixed.vertical = true;
 
 							} else if (
 								newPosition.y > this.player.position.y
@@ -144,11 +154,11 @@
 								&& playerBoundingBox.top < wall.position.y
 							) {
 								newPosition.y = wall.position.y - (this.player.image.height / 2);
-								positionFixed.y = true;
+								positionFixed.vertical = true;
 							}
 						}
 
-						if (positionFixed.x && positionFixed.y) {
+						if (positionFixed.horizontal && positionFixed.vertical) {
 							break;
 						}
 					}
