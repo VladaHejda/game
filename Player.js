@@ -24,6 +24,9 @@ class Player {
 			x,
 			y,
 		};
+		this.width = this.image.width;
+		this.height = this.image.height;
+
 		this.movementSpeed = 1;
 		this.rotationSpeed = 1;
 	}

@@ -42,74 +42,88 @@ class Playground {
 		};
 
 		for (let i = 0; i < this.walls.length; i++) {
-			const wall = this.walls[i];
+			// todo moc argumentů fuj!
+			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.walls[i])) {
+				break;
+			}
+		}
 
-			const intersects = {
-				horizontally: Math.min(
-					Math.max(playerBoundingBox.right - wall.position.x, 0),
-					Math.max((wall.position.x + wall.width) - playerBoundingBox.left, 0),
-				),
-				vertically: Math.min(
-					Math.max(playerBoundingBox.bottom - wall.position.y, 0),
-					Math.max((wall.position.y + wall.height) - playerBoundingBox.top, 0),
-				),
-			};
-
-			const possibleSuspension = {
-				horizontally: !positionFixed.horizontal && intersects.vertically > 0,
-				vertically: !positionFixed.vertical && intersects.horizontally > 0,
-			};
-
-			if (
-				possibleSuspension.horizontally
-				&& intersects.vertically > intersects.horizontally
-			) {
-				if (
-					newPosition.x < player.position.x
-					&& playerBoundingBox.left < wall.position.x + wall.width
-					&& playerBoundingBox.right > wall.position.x + wall.width
-				) {
-					newPosition.x = wall.position.x + wall.width + (player.image.width / 2);
-					positionFixed.horizontal = true;
-
-				} else if (
-					newPosition.x > player.position.x
-					&& playerBoundingBox.right > wall.position.x
-					&& playerBoundingBox.left < wall.position.x
-				) {
-					newPosition.x = wall.position.x - (player.image.width / 2);
-					positionFixed.horizontal = true;
-				}
-
-			} else if (
-				possibleSuspension.vertically
-				&& intersects.horizontally > intersects.vertically
-			) {
-				if (
-					newPosition.y < player.position.y
-					&& playerBoundingBox.top < wall.position.y + wall.height
-					&& playerBoundingBox.bottom > wall.position.y + wall.height
-				) {
-					newPosition.y = wall.position.y + wall.height + (player.image.height / 2);
-					positionFixed.vertical = true;
-
-				} else if (
-					newPosition.y > player.position.y
-					&& playerBoundingBox.bottom > wall.position.y
-					&& playerBoundingBox.top < wall.position.y
-				) {
-					newPosition.y = wall.position.y - (player.image.height / 2);
-					positionFixed.vertical = true;
-				}
+		for (let i = 0; i < this.players.length; i++) {
+			if (this.players[i] === player) {
+				continue;
 			}
 
-			if (positionFixed.horizontal && positionFixed.vertical) {
+			// todo hráč má pivot jinde než wall
+			if (!this.calculateCollision(player, newPosition, playerBoundingBox, positionFixed, this.players[i])) {
 				break;
 			}
 		}
 
 		player.position.x = newPosition.x;
 		player.position.y = newPosition.y;
+	}
+
+	calculateCollision(player, newPosition, playerBoundingBox, positionFixed, obstruction) {
+		const intersects = {
+			horizontally: Math.min(
+				Math.max(playerBoundingBox.right - obstruction.position.x, 0),
+				Math.max((obstruction.position.x + obstruction.width) - playerBoundingBox.left, 0),
+			),
+			vertically: Math.min(
+				Math.max(playerBoundingBox.bottom - obstruction.position.y, 0),
+				Math.max((obstruction.position.y + obstruction.height) - playerBoundingBox.top, 0),
+			),
+		};
+
+		const possibleSuspension = {
+			horizontally: !positionFixed.horizontal && intersects.vertically > 0,
+			vertically: !positionFixed.vertical && intersects.horizontally > 0,
+		};
+
+		if (
+			possibleSuspension.horizontally
+			&& intersects.vertically > intersects.horizontally
+		) {
+			if (
+				newPosition.x < player.position.x
+				&& playerBoundingBox.left < obstruction.position.x + obstruction.width
+				&& playerBoundingBox.right > obstruction.position.x + obstruction.width
+			) {
+				newPosition.x = obstruction.position.x + obstruction.width + (player.image.width / 2);
+				positionFixed.horizontal = true;
+
+			} else if (
+				newPosition.x > player.position.x
+				&& playerBoundingBox.right > obstruction.position.x
+				&& playerBoundingBox.left < obstruction.position.x
+			) {
+				newPosition.x = obstruction.position.x - (player.image.width / 2);
+				positionFixed.horizontal = true;
+			}
+
+		} else if (
+			possibleSuspension.vertically
+			&& intersects.horizontally > intersects.vertically
+		) {
+			if (
+				newPosition.y < player.position.y
+				&& playerBoundingBox.top < obstruction.position.y + obstruction.height
+				&& playerBoundingBox.bottom > obstruction.position.y + obstruction.height
+			) {
+				newPosition.y = obstruction.position.y + obstruction.height + (player.image.height / 2);
+				positionFixed.vertical = true;
+
+			} else if (
+				newPosition.y > player.position.y
+				&& playerBoundingBox.bottom > obstruction.position.y
+				&& playerBoundingBox.top < obstruction.position.y
+			) {
+				newPosition.y = obstruction.position.y - (player.image.height / 2);
+				positionFixed.vertical = true;
+			}
+		}
+
+		return !positionFixed.horizontal || !positionFixed.vertical;
 	}
 
 }

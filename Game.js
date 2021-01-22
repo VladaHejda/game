@@ -59,7 +59,6 @@ class Game {
 		);
 
 		document.addEventListener('keydown', (event) => {
-			console.log(event.key);
 			this.onKeyPress(event.key, true);
 		});
 		document.addEventListener('keyup', (event) => {
