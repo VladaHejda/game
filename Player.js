@@ -20,12 +20,11 @@ class Player {
 		this.image.src = 'player.png';
 
 		this.rotation = 0.0;
-		this.position = {
+		this.coordinates = {
 			x,
 			y,
 		};
-		this.width = this.image.width;
-		this.height = this.image.height;
+		this.radius = this.image.width / 2;
 
 		this.movementSpeed = 1;
 		this.rotationSpeed = 1;
@@ -78,14 +77,14 @@ class Player {
 		this.updateMovement(playground);
 
 		context.save();
-		context.translate(this.position.x + (this.image.width / 2), this.position.y + (this.image.height / 2));
+		context.translate(this.coordinates.x, this.coordinates.y);
 		context.rotate(this.rotation);
 		context.drawImage(
 			this.image,
-			-(this.image.width / 2),
-			-(this.image.height / 2),
-			this.image.width,
-			this.image.height,
+			-this.radius,
+			-this.radius,
+			this.radius * 2,
+			this.radius * 2,
 		);
 		context.restore();
 	}

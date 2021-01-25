@@ -44,53 +44,53 @@ class Playground {
 	}
 
 	movePlayer(player, leadDirection, sideDirection) {
-		const positionLimits = {
-			[Playground.MOVEMENT_DIRECTION.LEFT]: 1,
-			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - player.width - 1,
-			[Playground.MOVEMENT_DIRECTION.UP]: 1,
-			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - player.height - 1,
-		};
-
-		const obstructions = [];
-		this.walls.forEach(wall => obstructions.push(wall));
-		this.players.forEach(otherPlayer => {
-			if (otherPlayer !== player) {
-				obstructions.push(otherPlayer);
-			}
-		});
-
-		const positionDelta = {
+		const coordinatesDelta = {
 			x: (leadDirection * Math.sin(player.rotation)) +
 				(sideDirection * Math.sin(player.rotation + (Math.PI / 2))),
 			y: (leadDirection * -Math.cos(player.rotation)) +
 				(sideDirection * -Math.cos(player.rotation + (Math.PI / 2))),
 		};
 
-		Playground.DIMENSIONS.forEach(dimension => {
-			let direction;
-			if (positionDelta[dimension.name] < 0) {
-				direction = dimension.directions.lower;
-			} else if (positionDelta[dimension.name] > 0) {
-				direction = dimension.directions.higher;
-			} else {
+		this.players.forEach(otherPlayer => {
+			if (otherPlayer === player) {
 				return;
 			}
 
-			obstructions.forEach(obstruction => {
-				const limit = this.findPositionLimit(player, obstruction, direction);
+			this.slowCirclesCollision(player, otherPlayer, coordinatesDelta);
+		});
+
+		const coordinatesLimits = {
+			[Playground.MOVEMENT_DIRECTION.LEFT]: player.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - player.radius - 1,
+			[Playground.MOVEMENT_DIRECTION.UP]: player.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - player.radius - 1,
+		};
+
+		Playground.DIMENSIONS.forEach(dimension => {
+			let direction;
+			this.walls.forEach(obstruction => {
+
+				if (coordinatesDelta[dimension.name] < 0) {
+					direction = dimension.directions.lower;
+				} else if (coordinatesDelta[dimension.name] > 0) {
+					direction = dimension.directions.higher;
+				} else {
+					return;
+				}
+				const limit = this.findCoordinatesLimit(player, obstruction, direction);
 
 				if (limit !== null) {
-					positionLimits[direction] = direction === dimension.directions.lower
-						? Math.max(positionLimits[direction], limit)
-						: Math.min(positionLimits[direction], limit);
+					coordinatesLimits[direction] = direction === dimension.directions.lower
+						? Math.max(coordinatesLimits[direction], limit)
+						: Math.min(coordinatesLimits[direction], limit);
 				}
 			});
 
-			let newPosition = player.position[dimension.name] + positionDelta[dimension.name];
-			newPosition = Math.max(newPosition, positionLimits[dimension.directions.lower]);
-			newPosition = Math.min(newPosition, positionLimits[dimension.directions.higher]);
+			let newCoordinates = player.coordinates[dimension.name] + coordinatesDelta[dimension.name];
+			newCoordinates = Math.max(newCoordinates, coordinatesLimits[dimension.directions.lower]);
+			newCoordinates = Math.min(newCoordinates, coordinatesLimits[dimension.directions.higher]);
 
-			player.position[dimension.name] = newPosition;
+			player.coordinates[dimension.name] = newCoordinates;
 		});
 	}
 
@@ -98,19 +98,19 @@ class Playground {
 
 	}
 
-	findPositionLimit(subject, obstruction, direction) {
+	findCoordinatesLimit(subject, obstruction, direction) {
 		const subjectBoundingBox = {
-			left: subject.position.x,
-			right: subject.position.x + subject.width,
-			top: subject.position.y,
-			bottom: subject.position.y + subject.height,
+			left: subject.coordinates.x - subject.radius,
+			right: subject.coordinates.x + subject.radius,
+			top: subject.coordinates.y - subject.radius,
+			bottom: subject.coordinates.y + subject.radius,
 		};
 
 		const obstructionBoundingBox = {
-			left: obstruction.position.x,
-			right: obstruction.position.x + obstruction.width,
-			top: obstruction.position.y,
-			bottom: obstruction.position.y + obstruction.height,
+			left: obstruction.coordinates.x,
+			right: obstruction.coordinates.x + obstruction.width,
+			top: obstruction.coordinates.y,
+			bottom: obstruction.coordinates.y + obstruction.height,
 		};
 
 		let canObstruct;
@@ -135,23 +135,40 @@ class Playground {
 		switch (direction) {
 			case Playground.MOVEMENT_DIRECTION.LEFT:
 				canObstruct = obstructionBoundingBox.right < subjectBoundingBox.left;
-				limit = obstructionBoundingBox.right + 1;
+				limit = obstructionBoundingBox.right + subject.radius + 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.RIGHT:
 				canObstruct = obstructionBoundingBox.left > subjectBoundingBox.right;
-				limit = obstructionBoundingBox.left - subject.width - 1;
+				limit = obstructionBoundingBox.left - subject.radius - 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.UP:
 				canObstruct = obstructionBoundingBox.bottom < subjectBoundingBox.top;
-				limit = obstructionBoundingBox.bottom + 1;
+				limit = obstructionBoundingBox.bottom + subject.radius + 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.DOWN:
 				canObstruct = obstructionBoundingBox.top > subjectBoundingBox.bottom;
-				limit = obstructionBoundingBox.top - subject.height - 1;
+				limit = obstructionBoundingBox.top - subject.radius - 1;
 				break;
 		}
 
 		return canObstruct ? limit : null;
+	}
+
+	slowCirclesCollision(movedCircle, obstructingCircle, coordinatesDelta) {
+		const movedCoordinates = {
+			x: movedCircle.coordinates.x + coordinatesDelta.x,
+			y: movedCircle.coordinates.y + coordinatesDelta.y,
+		};
+
+		let maxSquare = Math.pow(movedCoordinates.x - obstructingCircle.coordinates.x, 2) +
+			Math.pow(movedCoordinates.y - obstructingCircle.coordinates.y, 2);
+		let radiiSquare = Math.pow(movedCircle.radius + obstructingCircle.radius, 2);
+
+		if (maxSquare < radiiSquare) {
+			const fragment = maxSquare / radiiSquare;
+			coordinatesDelta.x *= fragment;
+			coordinatesDelta.y *= fragment;
+		}
 	}
 
 }

@@ -4,21 +4,20 @@ class Ball {
 		this.image = new Image();
 		this.image.src = 'ball.png';
 
-		this.position = {
+		this.coordinates = {
 			x,
 			y,
 		};
-		this.width = this.image.width;
-		this.height = this.image.height;
+		this.radius = this.image.width / 2;
 	}
 
 	render(context) {
 		context.drawImage(
 			this.image,
-			this.position.x,
-			this.position.y,
-			this.image.width,
-			this.image.height,
+			this.coordinates.x,
+			this.coordinates.y,
+			this.radius * 2,
+			this.radius * 2,
 		);
 	}
 

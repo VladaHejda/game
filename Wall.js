@@ -1,7 +1,7 @@
 class Wall {
 
 	constructor(x, y, width, height) {
-		this.position = {
+		this.coordinates = {
 			x,
 			y,
 		};
@@ -11,7 +11,7 @@ class Wall {
 
 	render(context) {
 		context.fillStyle = '#000';
-		context.fillRect(this.position.x, this.position.y, this.width, this.height);
+		context.fillRect(this.coordinates.x, this.coordinates.y, this.width, this.height);
 	}
 
 }
