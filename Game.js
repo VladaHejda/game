@@ -7,12 +7,14 @@ class Game {
 		DOWN: 'ArrowDown',
 		N: 'n',
 		M: 'm',
+		SPACE: ' ',
 		A: 'a',
 		D: 'd',
 		W: 'w',
 		S: 's',
 		Q: 'q',
 		E: 'e',
+		R: 'r',
 	};
 
 	constructor(document, canvasElement, width, height) {
@@ -29,12 +31,14 @@ class Game {
 			Game.KEY_CODES.DOWN,
 			Game.KEY_CODES.N,
 			Game.KEY_CODES.M,
+			Game.KEY_CODES.SPACE,
 			Game.KEY_CODES.A,
 			Game.KEY_CODES.D,
 			Game.KEY_CODES.W,
 			Game.KEY_CODES.S,
 			Game.KEY_CODES.Q,
 			Game.KEY_CODES.E,
+			Game.KEY_CODES.R,
 		];
 
 		this.keysPressed = {};
@@ -52,6 +56,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_BACKWARD]: Game.KEY_CODES.DOWN,
 					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.N,
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.M,
+					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.SPACE,
 				}),
 				new Player(this, 260, 60, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.A,
@@ -60,9 +65,10 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_BACKWARD]: Game.KEY_CODES.S,
 					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.Q,
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
+					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.R,
 				}),
 			],
-			new Ball(220, 550),
+			new Ball(220, 200),
 			[
 				new Wall(150, 300, 100, 200),
 				new Wall(400, 400, 100, 50),

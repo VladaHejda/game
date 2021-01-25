@@ -43,20 +43,16 @@ class Playground {
 		this.walls.forEach(wall => wall.render(context));
 	}
 
-	movePlayer(player, leadDirection, sideDirection) {
-		const coordinatesDelta = {
-			x: (leadDirection * Math.sin(player.rotation)) +
-				(sideDirection * Math.sin(player.rotation + (Math.PI / 2))),
-			y: (leadDirection * -Math.cos(player.rotation)) +
-				(sideDirection * -Math.cos(player.rotation + (Math.PI / 2))),
-		};
-
+	movePlayer(player, coordinatesDelta) {
 		this.players.forEach(otherPlayer => {
 			if (otherPlayer === player) {
 				return;
 			}
 
-			this.slowCirclesCollision(player, otherPlayer, coordinatesDelta);
+			if (this.doesCirclesCollide(player, otherPlayer, coordinatesDelta)) {
+				coordinatesDelta.x *= 0.2;
+				coordinatesDelta.y *= 0.2;
+			}
 		});
 
 		const coordinatesLimits = {
@@ -69,7 +65,6 @@ class Playground {
 		Playground.DIMENSIONS.forEach(dimension => {
 			let direction;
 			this.walls.forEach(obstruction => {
-
 				if (coordinatesDelta[dimension.name] < 0) {
 					direction = dimension.directions.lower;
 				} else if (coordinatesDelta[dimension.name] > 0) {
@@ -86,16 +81,24 @@ class Playground {
 				}
 			});
 
-			let newCoordinates = player.coordinates[dimension.name] + coordinatesDelta[dimension.name];
-			newCoordinates = Math.max(newCoordinates, coordinatesLimits[dimension.directions.lower]);
-			newCoordinates = Math.min(newCoordinates, coordinatesLimits[dimension.directions.higher]);
+			let newDelta = coordinatesDelta[dimension.name];
+			newDelta = Math.max(coordinatesLimits[dimension.directions.lower] - player.coordinates[dimension.name], newDelta);
+			newDelta = Math.min(coordinatesLimits[dimension.directions.higher] - player.coordinates[dimension.name], newDelta);
 
-			player.coordinates[dimension.name] = newCoordinates;
+			player.coordinates[dimension.name] = player.coordinates[dimension.name] + newDelta;
 		});
 	}
 
-	takeBall(player) {
+	takeBall(player, coordinatesDelta) {
+		if (this.ball.holder !== null) {
+			return;
+		}
 
+		if (!this.doesCirclesCollide(player, this.ball, coordinatesDelta)) {
+			return;
+		}
+
+		player.setBall(this.ball);
 	}
 
 	findCoordinatesLimit(subject, obstruction, direction) {
@@ -154,7 +157,7 @@ class Playground {
 		return canObstruct ? limit : null;
 	}
 
-	slowCirclesCollision(movedCircle, obstructingCircle, coordinatesDelta) {
+	doesCirclesCollide(movedCircle, obstructingCircle, coordinatesDelta) {
 		const movedCoordinates = {
 			x: movedCircle.coordinates.x + coordinatesDelta.x,
 			y: movedCircle.coordinates.y + coordinatesDelta.y,
@@ -164,11 +167,7 @@ class Playground {
 			Math.pow(movedCoordinates.y - obstructingCircle.coordinates.y, 2);
 		let radiiSquare = Math.pow(movedCircle.radius + obstructingCircle.radius, 2);
 
-		if (maxSquare < radiiSquare) {
-			const fragment = maxSquare / radiiSquare;
-			coordinatesDelta.x *= fragment;
-			coordinatesDelta.y *= fragment;
-		}
+		return maxSquare < radiiSquare;
 	}
 
 }

@@ -7,6 +7,7 @@ class Player {
 		GO_BACKWARD: 3,
 		GO_LEFT: 4,
 		GO_RIGHT: 5,
+		SHOOT: 6,
 	};
 
 	static STRAIGHT_MOVEMENT_COEFFICIENT = 3;
@@ -17,25 +18,36 @@ class Player {
 		this.controls = controls;
 
 		this.image = new Image();
-		this.image.src = 'player.png';
 
 		this.rotation = 0.0;
 		this.coordinates = {
 			x,
 			y,
 		};
-		this.radius = this.image.width / 2;
+		this.radius = 20;
 
 		this.movementSpeed = 1;
 		this.rotationSpeed = 1;
+
+		this.ball = null;
+	}
+
+	update(playground) {
+		this.updateRotation();
+		this.updateMovement(playground);
+
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.SHOOT]]) {
+			this.shoot();
+		}
 	}
 
 	updateRotation() {
 		let rotation = 0;
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_LEFT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_RIGHT]]) {
-			rotation = -1;
-		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_RIGHT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_LEFT]]) {
-			rotation = 1;
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_RIGHT]]) {
+			rotation += 1;
+		}
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.TURN_LEFT]]) {
+			rotation -= 1;
 		}
 
 		if (rotation !== 0) {
@@ -45,17 +57,19 @@ class Player {
 
 	updateMovement(playground) {
 		let leadDirection = 0;
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_FORWARD]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_BACKWARD]]) {
-			leadDirection = 1;
-		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_BACKWARD]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_FORWARD]]) {
-			leadDirection = -1;
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_FORWARD]]) {
+			leadDirection += 1;
+		}
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_BACKWARD]]) {
+			leadDirection -= 1;
 		}
 
 		let sideDirection = 0;
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_RIGHT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_LEFT]]) {
-			sideDirection = 1;
-		} else if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_LEFT]] && !this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_RIGHT]]) {
-			sideDirection = -1;
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_RIGHT]]) {
+			sideDirection += 1;
+		}
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.GO_LEFT]]) {
+			sideDirection -= 1;
 		}
 
 		if (leadDirection !== 0 || sideDirection !== 0) {
@@ -67,14 +81,38 @@ class Player {
 			leadDirection *= coefficient;
 			sideDirection *= coefficient;
 
-			playground.movePlayer(this, leadDirection, sideDirection);
-			playground.takeBall(this);
+			const coordinatesDelta = {
+				x: (leadDirection * Math.sin(this.rotation)) +
+					(sideDirection * Math.sin(this.rotation + (Math.PI / 2))),
+				y: (leadDirection * -Math.cos(this.rotation)) +
+					(sideDirection * -Math.cos(this.rotation + (Math.PI / 2))),
+			};
+
+			playground.movePlayer(this, coordinatesDelta);
+			playground.takeBall(this, coordinatesDelta);
 		}
 	}
 
+	shoot() {
+		if (this.ball === null) {
+			return;
+		}
+
+		this.ball.holder = null;
+		this.ball = null;
+	}
+
+	setBall(ball) {
+		this.ball = ball;
+		this.ball.holder = this;
+	}
+
 	render(context, playground) {
-		this.updateRotation();
-		this.updateMovement(playground);
+		this.update(playground);
+
+		this.image.src = this.ball !== null
+			? 'player-with-ball.png'
+			: 'player.png';
 
 		context.save();
 		context.translate(this.coordinates.x, this.coordinates.y);

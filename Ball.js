@@ -9,13 +9,19 @@ class Ball {
 			y,
 		};
 		this.radius = this.image.width / 2;
+
+		this.holder = null;
 	}
 
 	render(context) {
+		if (this.holder !== null) {
+			return;
+		}
+
 		context.drawImage(
 			this.image,
-			this.coordinates.x,
-			this.coordinates.y,
+			this.coordinates.x - this.radius,
+			this.coordinates.y - this.radius,
 			this.radius * 2,
 			this.radius * 2,
 		);
