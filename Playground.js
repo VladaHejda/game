@@ -24,8 +24,7 @@ class Playground {
 		},
 	];
 
-	constructor(game, width, height, players, ball, walls) {
-		this.game = game;
+	constructor(width, height, players, ball, walls) {
 		this.width = width;
 		this.height = height;
 		this.players = players;
@@ -38,8 +37,8 @@ class Playground {
 		context.strokeStyle = '#000';
 		context.strokeRect(0, 0, this.width, this.height);
 
+		this.ball.render(context, this);
 		this.players.forEach(player => player.render(context, this));
-		this.ball.render(context);
 		this.walls.forEach(wall => wall.render(context));
 	}
 
@@ -49,7 +48,7 @@ class Playground {
 				return;
 			}
 
-			if (this.doesCirclesCollide(player, otherPlayer, coordinatesDelta)) {
+			if (this.doesCirclesCollide(player, otherPlayer)) {
 				coordinatesDelta.x *= 0.2;
 				coordinatesDelta.y *= 0.2;
 			}
@@ -89,12 +88,49 @@ class Playground {
 		});
 	}
 
-	takeBall(player, coordinatesDelta) {
+	moveBall(ball, coordinatesDelta) {
+		const coordinatesLimits = {
+			[Playground.MOVEMENT_DIRECTION.LEFT]: ball.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - ball.radius - 1,
+			[Playground.MOVEMENT_DIRECTION.UP]: ball.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - ball.radius - 1,
+		};
+
+		Playground.DIMENSIONS.forEach(dimension => {
+			let direction;
+			this.walls.forEach(obstruction => {
+				if (coordinatesDelta[dimension.name] < 0) {
+					direction = dimension.directions.lower;
+				} else if (coordinatesDelta[dimension.name] > 0) {
+					direction = dimension.directions.higher;
+				} else {
+					return;
+				}
+				const limit = this.findCoordinatesLimit(ball, obstruction, direction);
+
+				if (limit !== null) {
+					coordinatesLimits[direction] = direction === dimension.directions.lower
+						? Math.max(coordinatesLimits[direction], limit)
+						: Math.min(coordinatesLimits[direction], limit);
+				}
+			});
+
+			let newDelta = coordinatesDelta[dimension.name];
+			newDelta = Math.max(coordinatesLimits[dimension.directions.lower] - ball.coordinates[dimension.name], newDelta);
+			newDelta = Math.min(coordinatesLimits[dimension.directions.higher] - ball.coordinates[dimension.name], newDelta);
+
+			ball.coordinates[dimension.name] = ball.coordinates[dimension.name] + newDelta;
+		});
+	}
+
+	takeBall(player) {
 		if (this.ball.holder !== null) {
 			return;
 		}
-
-		if (!this.doesCirclesCollide(player, this.ball, coordinatesDelta)) {
+		if (this.ball.speed > 0) {
+			return;
+		}
+		if (!this.doesCirclesCollide(player, this.ball)) {
 			return;
 		}
 
@@ -157,14 +193,9 @@ class Playground {
 		return canObstruct ? limit : null;
 	}
 
-	doesCirclesCollide(movedCircle, obstructingCircle, coordinatesDelta) {
-		const movedCoordinates = {
-			x: movedCircle.coordinates.x + coordinatesDelta.x,
-			y: movedCircle.coordinates.y + coordinatesDelta.y,
-		};
-
-		let maxSquare = Math.pow(movedCoordinates.x - obstructingCircle.coordinates.x, 2) +
-			Math.pow(movedCoordinates.y - obstructingCircle.coordinates.y, 2);
+	doesCirclesCollide(movedCircle, obstructingCircle) {
+		let maxSquare = Math.pow(movedCircle.coordinates.x - obstructingCircle.coordinates.x, 2) +
+			Math.pow(movedCircle.coordinates.y - obstructingCircle.coordinates.y, 2);
 		let radiiSquare = Math.pow(movedCircle.radius + obstructingCircle.radius, 2);
 
 		return maxSquare < radiiSquare;

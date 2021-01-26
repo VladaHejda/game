@@ -19,11 +19,11 @@ class Player {
 
 		this.image = new Image();
 
-		this.rotation = 0.0;
 		this.coordinates = {
 			x,
 			y,
 		};
+		this.rotation = 0.0;
 		this.radius = 20;
 
 		this.movementSpeed = 1;
@@ -89,7 +89,7 @@ class Player {
 			};
 
 			playground.movePlayer(this, coordinatesDelta);
-			playground.takeBall(this, coordinatesDelta);
+			playground.takeBall(this);
 		}
 	}
 
@@ -97,6 +97,11 @@ class Player {
 		if (this.ball === null) {
 			return;
 		}
+
+		this.ball.rotation = this.rotation;
+		this.ball.coordinates.x = this.coordinates.x;
+		this.ball.coordinates.y = this.coordinates.y;
+		this.ball.speed = 1;
 
 		this.ball.holder = null;
 		this.ball = null;

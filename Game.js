@@ -45,7 +45,6 @@ class Game {
 		this.listenKeys.forEach(keyCode => this.keysPressed[keyCode] = false);
 
 		this.playground = new Playground(
-			this,
 			this.width,
 			this.height,
 			[
@@ -71,7 +70,7 @@ class Game {
 			new Ball(220, 200),
 			[
 				new Wall(150, 300, 100, 200),
-				new Wall(400, 400, 100, 50),
+				new Wall(405, 400, 95, 50),
 				new Wall(250, 400, 130, 100),
 				new Wall(480, 350, 20, 50),
 				new Wall(350, 150, 40, 200),
