@@ -15,7 +15,7 @@ class Player {
 
 	static MAX_STRETCHED = 1.3;
 
-	constructor(game, x, y, rotation, controls) {
+	constructor(game, x, y, rotation, controls, lives) {
 		this.game = game;
 		this.controls = controls;
 
@@ -31,24 +31,31 @@ class Player {
 		this.movementSpeed = 1;
 		this.rotationSpeed = 1;
 
+		this.lives = lives;
 		this.ball = null;
 		this.stretched = 0;
 		this.fatigued = 0;
 		this.holdTime = 0;
 		this.injured = 0;
+		this.injuredBy = null;
 	}
 
 	update(playground) {
-		this.updateRotation();
-		this.updateMovement(playground);
+		if (this.lives > 0) {
+			this.updateRotation();
+			this.updateMovement(playground);
+			this.stretch();
+		} else {
+			this.holdTime = 0;
+		}
+
 		this.updateBall();
-		this.stretch();
 
 		if (this.fatigued > 0) {
 			this.fatigued -= 0.003;
 		}
 		if (this.injured > 0) {
-			this.injured -= 0.05;
+			this.injured -= 0.025;
 		}
 	}
 
@@ -168,15 +175,30 @@ class Player {
 		this.holdTime = 1;
 	}
 
-	injure() {
+	injureBy(ball) {
+		if (this.injuredBy === ball) {
+			return;
+		}
+		if (this.lives <= 0) {
+			return;
+		}
+
+		this.injuredBy = ball;
 		this.injured = 1;
+		this.lives--;
+
+		ball.onHalt(() => {
+			this.injuredBy = null;
+		});
 	}
 
 	getLoaderLength() {
+		if (this.lives <= 0) {
+			return 0;
+		}
 		if (this.ball !== null && this.stretched > 0 && this.stretched <= Player.MAX_STRETCHED) {
 			return Math.min(this.stretched, 1);
 		}
-
 		if (this.fatigued > 0) {
 			return this.fatigued;
 		}
@@ -187,7 +209,9 @@ class Player {
 	render(context, playground) {
 		this.update(playground);
 
-		if (this.ball !== null) {
+		if (this.lives <= 0) {
+			this.image.src = 'player-dead.png';
+		} else if (this.ball !== null) {
 			this.image.src = 'player-with-ball.png';
 		} else if (this.injured > 0) {
 			this.image.src = 'player-injured.png';
@@ -217,13 +241,18 @@ class Player {
 			context.stroke();
 		}
 
-		if (this.ball !== null && this.holdTime > 0) {
+		if (this.lives > 0 && this.ball !== null && this.holdTime > 0) {
 			context.strokeStyle = '#00f';
 			context.lineWidth = 2;
 			context.beginPath();
 			context.moveTo(this.coordinates.x - this.radius, this.coordinates.y - this.radius + 2);
 			context.lineTo(this.coordinates.x - this.radius + (this.holdTime * 2 * this.radius), this.coordinates.y - this.radius + 2);
 			context.stroke();
+		}
+
+		if (this.injured > 0) {
+			context.font = '14px Arial';
+			context.fillText(this.lives.toString(), this.coordinates.x - 3, this.coordinates.y - this.radius - 5);
 		}
 	}
 

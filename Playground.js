@@ -59,14 +59,16 @@ class Playground {
 	}
 
 	moveBall(ball, coordinatesDelta) {
-		this.players.forEach(otherPlayer => {
-			if (otherPlayer === ball.lastHolder) {
-				return;
-			}
-			if (this.doesCirclesCollide(ball, otherPlayer)) {
-				otherPlayer.injure();
-			}
-		});
+		if (ball.isDangerous) {
+			this.players.forEach(otherPlayer => {
+				if (otherPlayer === ball.lastHolder) {
+					return;
+				}
+				if (this.doesCirclesCollide(ball, otherPlayer)) {
+					otherPlayer.injureBy(ball);
+				}
+			});
+		}
 
 		const newCoordinatesDelta = this.getCoordinatesDeltaReducedByWalls(ball, coordinatesDelta);
 

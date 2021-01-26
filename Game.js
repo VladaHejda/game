@@ -56,7 +56,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.N,
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.M,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.SPACE,
-				}),
+				}, 5),
 				new Player(this, 260, 60, 0, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.A,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.D,
@@ -65,7 +65,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.Q,
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.R,
-				}),
+				}, 5),
 			],
 			new Ball(220, 200),
 			[

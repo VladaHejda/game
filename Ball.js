@@ -17,6 +17,8 @@ class Ball {
 
 		this.holder = null;
 		this.lastHolder = null;
+
+		this.onHaltCallbacks = [];
 	}
 
 	update(playground) {
@@ -32,6 +34,15 @@ class Ball {
 		playground.moveBall(this, coordinatesDelta);
 
 		this.speed -= 0.01;
+
+		if (this.speed <= 0) {
+			this.onHaltCallbacks.forEach(callback => callback());
+			this.onHaltCallbacks = [];
+		}
+	}
+
+	onHalt(callback) {
+		this.onHaltCallbacks.push(callback);
 	}
 
 	updateRotation(rotation) {
