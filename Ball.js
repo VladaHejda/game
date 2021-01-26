@@ -16,6 +16,7 @@ class Ball {
 		this.isDangerous = false;
 
 		this.holder = null;
+		this.lastHolder = null;
 	}
 
 	update(playground) {

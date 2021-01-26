@@ -164,6 +164,7 @@ class Player {
 	setBall(ball) {
 		this.ball = ball;
 		this.ball.holder = this;
+		this.ball.lastHolder = this;
 		this.holdTime = 1;
 	}
 

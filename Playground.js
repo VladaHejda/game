@@ -47,7 +47,6 @@ class Playground {
 			if (otherPlayer === player) {
 				return;
 			}
-
 			if (this.doesCirclesCollide(player, otherPlayer)) {
 				coordinatesDelta.x *= 0.2;
 				coordinatesDelta.y *= 0.2;
@@ -61,6 +60,9 @@ class Playground {
 
 	moveBall(ball, coordinatesDelta) {
 		this.players.forEach(otherPlayer => {
+			if (otherPlayer === ball.lastHolder) {
+				return;
+			}
 			if (this.doesCirclesCollide(ball, otherPlayer)) {
 				otherPlayer.injure();
 			}
@@ -84,6 +86,8 @@ class Playground {
 				quadrantMutation = -quadrantMutation;
 				return;
 			}
+
+			ball.lastHolder = null;
 
 			const quadrant = ball.rotation / halfPI;
 			const rounder = quadrantMutation > 0
