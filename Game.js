@@ -15,6 +15,13 @@ class Game {
 		Q: 'q',
 		E: 'e',
 		R: 'r',
+		J: 'j',
+		L: 'l',
+		I: 'i',
+		K: 'k',
+		U: 'u',
+		O: 'o',
+		P: 'p',
 	};
 
 	constructor(document, canvasElement, width, height) {
@@ -39,6 +46,20 @@ class Game {
 			Game.KEY_CODES.Q,
 			Game.KEY_CODES.E,
 			Game.KEY_CODES.R,
+			Game.KEY_CODES.J,
+			Game.KEY_CODES.J,
+			Game.KEY_CODES.L,
+			Game.KEY_CODES.L,
+			Game.KEY_CODES.I,
+			Game.KEY_CODES.I,
+			Game.KEY_CODES.K,
+			Game.KEY_CODES.K,
+			Game.KEY_CODES.U,
+			Game.KEY_CODES.U,
+			Game.KEY_CODES.O,
+			Game.KEY_CODES.O,
+			Game.KEY_CODES.P,
+			Game.KEY_CODES.P,
 		];
 
 		this.keysPressed = {};
@@ -65,6 +86,15 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.Q,
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.R,
+				}, 5),
+				new Player(this, 350, 550, Math.PI * 0.1, {
+					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.J,
+					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.L,
+					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.I,
+					[Player.CONTROL_ACTIONS.GO_BACKWARD]: Game.KEY_CODES.K,
+					[Player.CONTROL_ACTIONS.GO_LEFT]: Game.KEY_CODES.U,
+					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.O,
+					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.P,
 				}, 5),
 			],
 			new Ball(220, 200),
