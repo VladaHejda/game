@@ -69,7 +69,7 @@ class Game {
 			this.width,
 			this.height,
 			[
-				new Player(this, 200, 100, Math.PI * 1.5, {
+				new Player(this, 100, 300, Math.PI * 1.5, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.LEFT,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.RIGHT,
 					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.UP,
@@ -78,7 +78,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.M,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.SPACE,
 				}, 5),
-				new Player(this, 260, 60, 0, {
+				new Player(this, 260, 23, 0, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.A,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.D,
 					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.W,
@@ -87,7 +87,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.E,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.R,
 				}, 5),
-				new Player(this, 350, 550, Math.PI * 0.1, {
+				new Player(this, 350, 575, Math.PI * 0.1, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.J,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.L,
 					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.I,
@@ -97,12 +97,12 @@ class Game {
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.P,
 				}, 5),
 			],
-			new Ball(220, 200),
+			new Ball(420, 300),
 			[
-				new Wall(150, 300, 100, 200),
-				new Wall(405, 400, 95, 50),
-				new Wall(250, 400, 130, 100),
-				new Wall(480, 350, 20, 50),
+				new Wall(50, 50, 20, 420),
+				new Wall(120, 50, 420, 20),
+				new Wall(520, 120, 20, 430),
+				new Wall(50, 530, 420, 20),
 				new Wall(350, 150, 40, 200),
 			],
 		);
