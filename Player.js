@@ -13,7 +13,9 @@ class Player {
 	static STRAIGHT_MOVEMENT_COEFFICIENT = 3;
 	static DIAGONAL_MOVEMENT_COEFFICIENT = Math.sqrt(Math.pow(Player.STRAIGHT_MOVEMENT_COEFFICIENT, 2) / 2);
 
-	constructor(game, x, y, controls) {
+	static MAX_STRETCHED = 1.3;
+
+	constructor(game, x, y, rotation, controls) {
 		this.game = game;
 		this.controls = controls;
 
@@ -23,22 +25,20 @@ class Player {
 			x,
 			y,
 		};
-		this.rotation = 0.0;
+		this.rotation = rotation % (2 * Math.PI);
 		this.radius = 20;
 
 		this.movementSpeed = 1;
 		this.rotationSpeed = 1;
 
 		this.ball = null;
+		this.stretched = 0;
 	}
 
 	update(playground) {
 		this.updateRotation();
 		this.updateMovement(playground);
-
-		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.SHOOT]]) {
-			this.shoot();
-		}
+		this.stretch();
 	}
 
 	updateRotation() {
@@ -93,23 +93,50 @@ class Player {
 		}
 	}
 
+	stretch() {
+		if (this.ball === null) {
+			return;
+		}
+
+		if (this.game.keysPressed[this.controls[Player.CONTROL_ACTIONS.SHOOT]]) {
+			this.stretched += 0.01;
+		} else if (this.stretched > 0) {
+			this.shoot();
+		}
+	}
+
 	shoot() {
 		if (this.ball === null) {
+			return;
+		}
+
+		if (this.stretched > Player.MAX_STRETCHED) {
+			this.stretched = 0;
 			return;
 		}
 
 		this.ball.rotation = this.rotation;
 		this.ball.coordinates.x = this.coordinates.x;
 		this.ball.coordinates.y = this.coordinates.y;
-		this.ball.speed = 1;
+		this.ball.speed = 0.3 + (0.7 * Math.min(this.stretched, Player.MAX_STRETCHED));
 
 		this.ball.holder = null;
 		this.ball = null;
+
+		this.stretched = 0;
 	}
 
 	setBall(ball) {
 		this.ball = ball;
 		this.ball.holder = this;
+	}
+
+	getLoaderLength() {
+		if (this.ball !== null && this.stretched > 0 && this.stretched <= Player.MAX_STRETCHED) {
+			return Math.min(this.stretched, 1);
+		}
+
+		return 0;
 	}
 
 	render(context, playground) {
@@ -130,6 +157,16 @@ class Player {
 			this.radius * 2,
 		);
 		context.restore();
+
+		const loaderLength = this.getLoaderLength();
+		if (loaderLength > 0) {
+			context.strokeStyle = '#f00';
+			context.lineWidth = 2;
+			context.beginPath();
+			context.moveTo(this.coordinates.x - this.radius, this.coordinates.y - this.radius);
+			context.lineTo(this.coordinates.x - this.radius + (loaderLength * 2 * this.radius), this.coordinates.y - this.radius);
+			context.stroke();
+		}
 	}
 
 }

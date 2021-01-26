@@ -48,7 +48,7 @@ class Game {
 			this.width,
 			this.height,
 			[
-				new Player(this, 200, 100, {
+				new Player(this, 200, 100, Math.PI * 1.5, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.LEFT,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.RIGHT,
 					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.UP,
@@ -57,7 +57,7 @@ class Game {
 					[Player.CONTROL_ACTIONS.GO_RIGHT]: Game.KEY_CODES.M,
 					[Player.CONTROL_ACTIONS.SHOOT]: Game.KEY_CODES.SPACE,
 				}),
-				new Player(this, 260, 60, {
+				new Player(this, 260, 60, 0, {
 					[Player.CONTROL_ACTIONS.TURN_LEFT]: Game.KEY_CODES.A,
 					[Player.CONTROL_ACTIONS.TURN_RIGHT]: Game.KEY_CODES.D,
 					[Player.CONTROL_ACTIONS.GO_FORWARD]: Game.KEY_CODES.W,
