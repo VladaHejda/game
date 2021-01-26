@@ -4,14 +4,13 @@ class Ball {
 
 	constructor(x, y) {
 		this.image = new Image();
-		this.image.src = 'ball.png';
 
 		this.coordinates = {
 			x,
 			y,
 		};
 		this.rotation = 0.0;
-		this.radius = this.image.width / 2;
+		this.radius = 10;
 		this.speed = 0;
 		this.isDangerous = false;
 
@@ -55,6 +54,8 @@ class Ball {
 		}
 
 		this.update(playground);
+
+		this.image.src = 'ball.png';
 
 		context.drawImage(
 			this.image,
