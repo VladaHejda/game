@@ -140,6 +140,9 @@ class Playground {
 		if (this.ball.speed > 0) {
 			return;
 		}
+		if (player.fatigued > 0) {
+			return;
+		}
 		if (!this.doesCirclesCollide(player, this.ball)) {
 			return;
 		}

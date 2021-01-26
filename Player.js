@@ -33,12 +33,17 @@ class Player {
 
 		this.ball = null;
 		this.stretched = 0;
+		this.fatigued = 0;
 	}
 
 	update(playground) {
 		this.updateRotation();
 		this.updateMovement(playground);
 		this.stretch();
+
+		if (this.fatigued > 0) {
+			this.fatigued -= 0.003;
+		}
 	}
 
 	updateRotation() {
@@ -124,6 +129,7 @@ class Player {
 		this.ball = null;
 
 		this.stretched = 0;
+		this.fatigued = 1;
 	}
 
 	setBall(ball) {
@@ -134,6 +140,10 @@ class Player {
 	getLoaderLength() {
 		if (this.ball !== null && this.stretched > 0 && this.stretched <= Player.MAX_STRETCHED) {
 			return Math.min(this.stretched, 1);
+		}
+
+		if (this.fatigued > 0) {
+			return this.fatigued;
 		}
 
 		return 0;
