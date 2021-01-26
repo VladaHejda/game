@@ -60,6 +60,12 @@ class Playground {
 	}
 
 	moveBall(ball, coordinatesDelta) {
+		this.players.forEach(otherPlayer => {
+			if (this.doesCirclesCollide(ball, otherPlayer)) {
+				otherPlayer.injure();
+			}
+		});
+
 		const newCoordinatesDelta = this.getCoordinatesDeltaReducedByWalls(ball, coordinatesDelta);
 
 		const bounce = {

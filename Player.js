@@ -35,6 +35,7 @@ class Player {
 		this.stretched = 0;
 		this.fatigued = 0;
 		this.holdTime = 0;
+		this.injured = 0;
 	}
 
 	update(playground) {
@@ -45,6 +46,9 @@ class Player {
 
 		if (this.fatigued > 0) {
 			this.fatigued -= 0.003;
+		}
+		if (this.injured > 0) {
+			this.injured -= 0.05;
 		}
 	}
 
@@ -163,6 +167,10 @@ class Player {
 		this.holdTime = 1;
 	}
 
+	injure() {
+		this.injured = 1;
+	}
+
 	getLoaderLength() {
 		if (this.ball !== null && this.stretched > 0 && this.stretched <= Player.MAX_STRETCHED) {
 			return Math.min(this.stretched, 1);
@@ -178,9 +186,13 @@ class Player {
 	render(context, playground) {
 		this.update(playground);
 
-		this.image.src = this.ball !== null
-			? 'player-with-ball.png'
-			: 'player.png';
+		if (this.ball !== null) {
+			this.image.src = 'player-with-ball.png';
+		} else if (this.injured > 0) {
+			this.image.src = 'player-injured.png';
+		} else {
+			this.image.src = 'player.png';
+		}
 
 		context.save();
 		context.translate(this.coordinates.x, this.coordinates.y);
