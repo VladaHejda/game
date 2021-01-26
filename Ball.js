@@ -32,6 +32,10 @@ class Ball {
 		this.speed -= 0.01;
 	}
 
+	updateRotation(rotation) {
+		this.rotation = rotation % (2 * Math.PI);
+	}
+
 	render(context, playground) {
 		if (this.holder !== null) {
 			return;

@@ -54,73 +54,83 @@ class Playground {
 			}
 		});
 
-		const coordinatesLimits = {
-			[Playground.MOVEMENT_DIRECTION.LEFT]: player.radius + 1,
-			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - player.radius - 1,
-			[Playground.MOVEMENT_DIRECTION.UP]: player.radius + 1,
-			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - player.radius - 1,
-		};
-
-		Playground.DIMENSIONS.forEach(dimension => {
-			let direction;
-			this.walls.forEach(obstruction => {
-				if (coordinatesDelta[dimension.name] < 0) {
-					direction = dimension.directions.lower;
-				} else if (coordinatesDelta[dimension.name] > 0) {
-					direction = dimension.directions.higher;
-				} else {
-					return;
-				}
-				const limit = this.findCoordinatesLimit(player, obstruction, direction);
-
-				if (limit !== null) {
-					coordinatesLimits[direction] = direction === dimension.directions.lower
-						? Math.max(coordinatesLimits[direction], limit)
-						: Math.min(coordinatesLimits[direction], limit);
-				}
-			});
-
-			let newDelta = coordinatesDelta[dimension.name];
-			newDelta = Math.max(coordinatesLimits[dimension.directions.lower] - player.coordinates[dimension.name], newDelta);
-			newDelta = Math.min(coordinatesLimits[dimension.directions.higher] - player.coordinates[dimension.name], newDelta);
-
-			player.coordinates[dimension.name] = player.coordinates[dimension.name] + newDelta;
-		});
+		const newCoordinatesDelta = this.getCoordinatesDeltaReducedByWalls(player, coordinatesDelta);
+		player.coordinates.x += newCoordinatesDelta.x;
+		player.coordinates.y += newCoordinatesDelta.y;
 	}
 
 	moveBall(ball, coordinatesDelta) {
+		const newCoordinatesDelta = this.getCoordinatesDeltaReducedByWalls(ball, coordinatesDelta);
+
+		const bounce = {
+			x: coordinatesDelta.x - newCoordinatesDelta.x,
+			y: coordinatesDelta.y - newCoordinatesDelta.y,
+		};
+
+		ball.coordinates.x += newCoordinatesDelta.x - bounce.x;
+		ball.coordinates.y += newCoordinatesDelta.y - bounce.y;
+
+		const halfPI = Math.PI / 2;
+		let quadrantMutation = (coordinatesDelta.x * coordinatesDelta.y) > 0 ? 1 : -1;
+
+		Playground.DIMENSIONS.forEach(dimension => {
+			if (bounce[dimension.name] === 0) {
+				quadrantMutation = -quadrantMutation;
+				return;
+			}
+
+			const quadrant = ball.rotation / halfPI;
+			const rounder = quadrantMutation > 0
+				? Math.ceil
+				: Math.floor;
+			const quadrantRotation = rounder(quadrant) * halfPI;
+
+			ball.updateRotation(quadrantRotation + (quadrantRotation - ball.rotation));
+		});
+	}
+
+	getCoordinatesDeltaReducedByWalls(circle, coordinatesDelta) {
 		const coordinatesLimits = {
-			[Playground.MOVEMENT_DIRECTION.LEFT]: ball.radius + 1,
-			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - ball.radius - 1,
-			[Playground.MOVEMENT_DIRECTION.UP]: ball.radius + 1,
-			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - ball.radius - 1,
+			[Playground.MOVEMENT_DIRECTION.LEFT]: circle.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - circle.radius - 1,
+			[Playground.MOVEMENT_DIRECTION.UP]: circle.radius + 1,
+			[Playground.MOVEMENT_DIRECTION.DOWN]: this.height - circle.radius - 1,
+		};
+
+		const newCoordinatesDelta = {
+			x: 0,
+			y: 0,
 		};
 
 		Playground.DIMENSIONS.forEach(dimension => {
-			let direction;
-			this.walls.forEach(obstruction => {
-				if (coordinatesDelta[dimension.name] < 0) {
-					direction = dimension.directions.lower;
-				} else if (coordinatesDelta[dimension.name] > 0) {
-					direction = dimension.directions.higher;
-				} else {
-					return;
-				}
-				const limit = this.findCoordinatesLimit(ball, obstruction, direction);
+			if (coordinatesDelta[dimension.name] === 0) {
+				return;
+			}
 
+			let direction;
+			let limiter;
+			if (coordinatesDelta[dimension.name] < 0) {
+				direction = dimension.directions.lower;
+				limiter = Math.max;
+			} else {
+				direction = dimension.directions.higher;
+				limiter = Math.min;
+			}
+
+			this.walls.forEach(wall => {
+				const limit = this.findCoordinatesLimit(circle, wall, direction);
 				if (limit !== null) {
-					coordinatesLimits[direction] = direction === dimension.directions.lower
-						? Math.max(coordinatesLimits[direction], limit)
-						: Math.min(coordinatesLimits[direction], limit);
+					coordinatesLimits[direction] = limiter(coordinatesLimits[direction], limit)
 				}
 			});
 
-			let newDelta = coordinatesDelta[dimension.name];
-			newDelta = Math.max(coordinatesLimits[dimension.directions.lower] - ball.coordinates[dimension.name], newDelta);
-			newDelta = Math.min(coordinatesLimits[dimension.directions.higher] - ball.coordinates[dimension.name], newDelta);
-
-			ball.coordinates[dimension.name] = ball.coordinates[dimension.name] + newDelta;
+			newCoordinatesDelta[dimension.name] = limiter(
+				coordinatesLimits[direction] - circle.coordinates[dimension.name],
+				coordinatesDelta[dimension.name],
+			);
 		});
+
+		return newCoordinatesDelta;
 	}
 
 	takeBall(player) {
@@ -137,12 +147,12 @@ class Playground {
 		player.setBall(this.ball);
 	}
 
-	findCoordinatesLimit(subject, obstruction, direction) {
-		const subjectBoundingBox = {
-			left: subject.coordinates.x - subject.radius,
-			right: subject.coordinates.x + subject.radius,
-			top: subject.coordinates.y - subject.radius,
-			bottom: subject.coordinates.y + subject.radius,
+	findCoordinatesLimit(circle, obstruction, direction) {
+		const circleBoundingBox = {
+			left: circle.coordinates.x - circle.radius,
+			right: circle.coordinates.x + circle.radius,
+			top: circle.coordinates.y - circle.radius,
+			bottom: circle.coordinates.y + circle.radius,
 		};
 
 		const obstructionBoundingBox = {
@@ -156,13 +166,13 @@ class Playground {
 		switch (direction) {
 			case Playground.MOVEMENT_DIRECTION.LEFT:
 			case Playground.MOVEMENT_DIRECTION.RIGHT:
-				canObstruct = subjectBoundingBox.top <= obstructionBoundingBox.bottom
-					&& subjectBoundingBox.bottom >= obstructionBoundingBox.top;
+				canObstruct = circleBoundingBox.top <= obstructionBoundingBox.bottom
+					&& circleBoundingBox.bottom >= obstructionBoundingBox.top;
 				break;
 			case Playground.MOVEMENT_DIRECTION.UP:
 			case Playground.MOVEMENT_DIRECTION.DOWN:
-				canObstruct = subjectBoundingBox.left <= obstructionBoundingBox.right
-					&& subjectBoundingBox.right >= obstructionBoundingBox.left;
+				canObstruct = circleBoundingBox.left <= obstructionBoundingBox.right
+					&& circleBoundingBox.right >= obstructionBoundingBox.left;
 				break;
 		}
 
@@ -173,20 +183,20 @@ class Playground {
 		let limit;
 		switch (direction) {
 			case Playground.MOVEMENT_DIRECTION.LEFT:
-				canObstruct = obstructionBoundingBox.right < subjectBoundingBox.left;
-				limit = obstructionBoundingBox.right + subject.radius + 1;
+				canObstruct = obstructionBoundingBox.right < circleBoundingBox.left;
+				limit = obstructionBoundingBox.right + circle.radius + 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.RIGHT:
-				canObstruct = obstructionBoundingBox.left > subjectBoundingBox.right;
-				limit = obstructionBoundingBox.left - subject.radius - 1;
+				canObstruct = obstructionBoundingBox.left > circleBoundingBox.right;
+				limit = obstructionBoundingBox.left - circle.radius - 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.UP:
-				canObstruct = obstructionBoundingBox.bottom < subjectBoundingBox.top;
-				limit = obstructionBoundingBox.bottom + subject.radius + 1;
+				canObstruct = obstructionBoundingBox.bottom < circleBoundingBox.top;
+				limit = obstructionBoundingBox.bottom + circle.radius + 1;
 				break;
 			case Playground.MOVEMENT_DIRECTION.DOWN:
-				canObstruct = obstructionBoundingBox.top > subjectBoundingBox.bottom;
-				limit = obstructionBoundingBox.top - subject.radius - 1;
+				canObstruct = obstructionBoundingBox.top > circleBoundingBox.bottom;
+				limit = obstructionBoundingBox.top - circle.radius - 1;
 				break;
 		}
 
