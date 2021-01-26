@@ -1,6 +1,6 @@
 class Ball {
 
-	static MOVEMENT_COEFFICIENT = 13;
+	static MOVEMENT_COEFFICIENT = 14;
 
 	constructor(x, y) {
 		this.image = new Image();

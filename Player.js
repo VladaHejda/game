@@ -135,7 +135,7 @@ class Player {
 		this.ball.rotation = this.rotation;
 		this.ball.coordinates.x = this.coordinates.x;
 		this.ball.coordinates.y = this.coordinates.y;
-		this.ball.speed = 0.3 + (0.7 * Math.min(this.stretched, Player.MAX_STRETCHED));
+		this.ball.speed = 0.3 + (0.7 * Math.min(this.stretched, 1));
 		this.ball.isDangerous = true;
 
 		this.ball.holder = null;
