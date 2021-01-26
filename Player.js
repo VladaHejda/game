@@ -34,11 +34,13 @@ class Player {
 		this.ball = null;
 		this.stretched = 0;
 		this.fatigued = 0;
+		this.holdTime = 0;
 	}
 
 	update(playground) {
 		this.updateRotation();
 		this.updateMovement(playground);
+		this.updateBall();
 		this.stretch();
 
 		if (this.fatigued > 0) {
@@ -114,7 +116,6 @@ class Player {
 		if (this.ball === null) {
 			return;
 		}
-
 		if (this.stretched > Player.MAX_STRETCHED) {
 			this.stretched = 0;
 			return;
@@ -124,6 +125,30 @@ class Player {
 		this.ball.coordinates.x = this.coordinates.x;
 		this.ball.coordinates.y = this.coordinates.y;
 		this.ball.speed = 0.3 + (0.7 * Math.min(this.stretched, Player.MAX_STRETCHED));
+		this.ball.isDangerous = true;
+
+		this.ball.holder = null;
+		this.ball = null;
+
+		this.stretched = 0;
+		this.fatigued = 1;
+		this.holdTime = 0;
+	}
+
+	updateBall() {
+		if (this.ball === null) {
+			return;
+		}
+		if (this.holdTime > 0) {
+			this.holdTime -= 0.003;
+			return;
+		}
+
+		this.ball.updateRotation(this.rotation + Math.PI);
+		this.ball.coordinates.x = this.coordinates.x;
+		this.ball.coordinates.y = this.coordinates.y;
+		this.ball.speed = 0.2;
+		this.ball.isDangerous = false;
 
 		this.ball.holder = null;
 		this.ball = null;
@@ -135,6 +160,7 @@ class Player {
 	setBall(ball) {
 		this.ball = ball;
 		this.ball.holder = this;
+		this.holdTime = 1;
 	}
 
 	getLoaderLength() {
@@ -175,6 +201,15 @@ class Player {
 			context.beginPath();
 			context.moveTo(this.coordinates.x - this.radius, this.coordinates.y - this.radius);
 			context.lineTo(this.coordinates.x - this.radius + (loaderLength * 2 * this.radius), this.coordinates.y - this.radius);
+			context.stroke();
+		}
+
+		if (this.ball !== null && this.holdTime > 0) {
+			context.strokeStyle = '#00f';
+			context.lineWidth = 2;
+			context.beginPath();
+			context.moveTo(this.coordinates.x - this.radius, this.coordinates.y - this.radius + 2);
+			context.lineTo(this.coordinates.x - this.radius + (this.holdTime * 2 * this.radius), this.coordinates.y - this.radius + 2);
 			context.stroke();
 		}
 	}

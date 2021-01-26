@@ -13,6 +13,7 @@ class Ball {
 		this.rotation = 0.0;
 		this.radius = this.image.width / 2;
 		this.speed = 0;
+		this.isDangerous = false;
 
 		this.holder = null;
 	}
