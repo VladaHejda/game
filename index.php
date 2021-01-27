@@ -23,11 +23,16 @@
 
 		/*
 		vybíjená:
-		- kdo měl míč naposled, nemůže ho mít znova
-		- stiskem mezerníku se začne "rozpřahovat", čím déle se rozpřahuje, tím dále dostřelí (má to maximum, když ho přežene, nevystřelí vůbec, maximum chvilku bliká)
-		- může držet míc max např. 5 vtěřin, pak ho automaticky pustí (např. kousek směrem dozadu)
-		- míč se odráží od zdí, tím ztrácí rychlost, když se zastaví, změní barvu (aby to bylo poznat) a další hráč ho může sebrat
-		- hráč může (odražením) vybít sám sebe
+		- refaktoring (hráč by neměl znát svý controls)
+		- různé barvy hráčů
+		- online hraní
+		- pohyb na základě času, ne rychlosti animace
+		- přepočítání pixelů dle velikosti okna
+		- loadery znázorňovat spíš barvou hráče
+		- mrtvola bez krve
+		- zvuky
+		- kolize rohu zdi a kruhu
+		- odrážení míče od hráčů? (možná je ale lepší hratlnost když se to neodráží)
 		 */
 	</script>
 </html>
