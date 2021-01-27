@@ -102,6 +102,14 @@ class Playground {
 	}
 
 	getCoordinatesDeltaReducedByWalls(circle, coordinatesDelta) {
+		circle = {
+			coordinates: {
+				x: circle.coordinates.x,
+				y: circle.coordinates.y,
+			},
+			radius: circle.radius,
+		};
+
 		const coordinatesLimits = {
 			[Playground.MOVEMENT_DIRECTION.LEFT]: circle.radius + 1,
 			[Playground.MOVEMENT_DIRECTION.RIGHT]: this.width - circle.radius - 1,
@@ -132,7 +140,7 @@ class Playground {
 			this.walls.forEach(wall => {
 				const limit = this.findCoordinatesLimit(circle, wall, direction);
 				if (limit !== null) {
-					coordinatesLimits[direction] = limiter(coordinatesLimits[direction], limit)
+					coordinatesLimits[direction] = limiter(coordinatesLimits[direction], limit);
 				}
 			});
 
@@ -140,6 +148,8 @@ class Playground {
 				coordinatesLimits[direction] - circle.coordinates[dimension.name],
 				coordinatesDelta[dimension.name],
 			);
+
+			circle.coordinates[dimension.name] += newCoordinatesDelta[dimension.name];
 		});
 
 		return newCoordinatesDelta;
